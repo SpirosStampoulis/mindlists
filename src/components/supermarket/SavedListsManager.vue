@@ -83,7 +83,7 @@ import SavedListForm from './SavedListForm.vue'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
 import LoadListDialog from './LoadListDialog.vue'
 
-const props = defineProps<{
+defineProps<{
   currentItems: ListItem[]
 }>()
 

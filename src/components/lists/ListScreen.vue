@@ -74,7 +74,7 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import SavedListsManager from '@/components/supermarket/SavedListsManager.vue'
 import { useItemsStore } from '@/stores/items'
 import { useNotificationsStore } from '@/stores/notifications'
-import type { ListItem, SavedListItem } from '@/types'
+import type { SavedListItem } from '@/types'
 
 const route = useRoute()
 const listType = route.params.type as ListType

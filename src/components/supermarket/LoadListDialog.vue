@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SavedList, SavedListItem, ListItem } from '@/types'
+import type { SavedList, ListItem } from '@/types'
 
 const props = defineProps<{
   show: boolean
