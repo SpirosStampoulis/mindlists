@@ -86,10 +86,14 @@ export interface ListItem {
   updatedAt: string
 }
 
+export interface SavedListItem extends Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'> {
+  quantity?: number
+}
+
 export interface SavedList {
   id: string
   name: string
-  items: Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>[]
+  items: SavedListItem[]
   createdAt: string
   updatedAt: string
 }

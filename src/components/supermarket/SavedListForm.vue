@@ -20,10 +20,10 @@
           Items
         </label>
         <div class="space-y-2 max-h-64 overflow-y-auto">
-          <label
+          <div
             v-for="item in availableItems"
             :key="item.id"
-            class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+            class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded"
           >
             <input
               type="checkbox"
@@ -32,7 +32,16 @@
               class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
             <span class="flex-1">{{ item.title }}</span>
-          </label>
+            <input
+              v-if="selectedItems.includes(item.id)"
+              v-model.number="itemQuantities[item.id]"
+              type="number"
+              min="1"
+              placeholder="Qty"
+              @click.stop
+              class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
       </div>
 
@@ -58,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { SavedList, ListItem } from '@/types'
+import type { SavedList, ListItem, SavedListItem } from '@/types'
 
 const props = defineProps<{
   savedList?: SavedList
@@ -72,9 +81,10 @@ const emit = defineEmits<{
 
 const loading = ref(false)
 const selectedItems = ref<string[]>([])
+const itemQuantities = ref<Record<string, number>>({})
 const formData = ref({
   name: props.savedList?.name || '',
-  items: [] as Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>[]
+  items: [] as SavedListItem[]
 })
 
 const isEditing = computed(() => !!props.savedList)
@@ -86,6 +96,11 @@ onMounted(() => {
         const matchingItem = props.availableItems.find(
           item => item.title === savedItem.title
         )
+        if (matchingItem?.id) {
+          if (savedItem.quantity) {
+            itemQuantities.value[matchingItem.id] = savedItem.quantity
+          }
+        }
         return matchingItem?.id
       })
       .filter((id): id is string => !!id)
@@ -96,24 +111,23 @@ const toggleItem = (itemId: string) => {
   const index = selectedItems.value.indexOf(itemId)
   if (index > -1) {
     selectedItems.value.splice(index, 1)
+    delete itemQuantities.value[itemId]
   } else {
     selectedItems.value.push(itemId)
+    itemQuantities.value[itemId] = 1
   }
 }
 
 const handleSubmit = () => {
-  const selectedItemsData = props.availableItems
+  const selectedItemsData: SavedListItem[] = props.availableItems
     .filter(item => selectedItems.value.includes(item.id))
     .map(item => {
       const { id, createdAt, updatedAt, ...itemData } = item
-      const cleanedItem: any = {}
+      const cleanedItem: SavedListItem = { ...itemData } as SavedListItem
       
-      Object.keys(itemData).forEach(key => {
-        const value = itemData[key as keyof typeof itemData]
-        if (value !== undefined) {
-          cleanedItem[key] = value
-        }
-      })
+      if (itemQuantities.value[item.id]) {
+        cleanedItem.quantity = itemQuantities.value[item.id]
+      }
       
       return cleanedItem
     })

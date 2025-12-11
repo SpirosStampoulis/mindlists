@@ -55,6 +55,14 @@
       </div>
     </div>
 
+    <LoadListDialog
+      :show="showLoadDialog"
+      :saved-list="listToLoad"
+      :current-items="currentItems"
+      @confirm="confirmLoadList"
+      @cancel="showLoadDialog = false"
+    />
+
     <ConfirmDialog
       :show="showDeleteConfirm"
       title="Delete Saved List"
@@ -68,18 +76,19 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { SavedList, ListItem } from '@/types'
+import type { SavedList, ListItem, SavedListItem } from '@/types'
 import { useSavedLists } from '@/composables/useSavedLists'
 import { useAuthStore } from '@/stores/auth'
 import SavedListForm from './SavedListForm.vue'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
+import LoadListDialog from './LoadListDialog.vue'
 
-defineProps<{
+const props = defineProps<{
   currentItems: ListItem[]
 }>()
 
 const emit = defineEmits<{
-  load: [items: Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>[]]
+  load: [items: SavedListItem[]]
 }>()
 
 const authStore = useAuthStore()
@@ -91,6 +100,8 @@ const editingList = ref<SavedList | undefined>(undefined)
 const showDeleteConfirm = ref(false)
 const deletingListId = ref<string | null>(null)
 const loading = ref(false)
+const showLoadDialog = ref(false)
+const listToLoad = ref<SavedList | undefined>(undefined)
 
 onMounted(async () => {
   await loadSavedLists()
@@ -137,7 +148,16 @@ const editList = (savedList: SavedList) => {
 }
 
 const loadList = (savedList: SavedList) => {
-  emit('load', savedList.items)
+  listToLoad.value = savedList
+  showLoadDialog.value = true
+}
+
+const confirmLoadList = () => {
+  if (listToLoad.value) {
+    emit('load', listToLoad.value.items)
+    showLoadDialog.value = false
+    listToLoad.value = undefined
+  }
 }
 
 const deleteList = (savedListId: string) => {
