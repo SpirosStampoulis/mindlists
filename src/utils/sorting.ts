@@ -1,4 +1,4 @@
-import type { ListItem } from '@/types'
+import type { ListItem, FilterType } from '@/types'
 
 export const sortItems = (items: ListItem[]): ListItem[] => {
   return [...items].sort((a, b) => {
@@ -24,9 +24,20 @@ export const sortItems = (items: ListItem[]): ListItem[] => {
   })
 }
 
-export const filterItems = (items: ListItem[], filter: 'all' | 'active' | 'expiring' | 'expired'): ListItem[] => {
+export const filterItems = (items: ListItem[], filter: FilterType, listType?: string): ListItem[] => {
   const now = new Date()
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+  if (listType === 'games') {
+    switch (filter) {
+      case 'played':
+        return items.filter(item => item.gameStatus === 'played')
+      case 'will-play':
+        return items.filter(item => item.gameStatus === 'will-play')
+      default:
+        return items
+    }
+  }
 
   switch (filter) {
     case 'active':

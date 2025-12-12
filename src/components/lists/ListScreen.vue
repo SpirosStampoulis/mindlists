@@ -31,7 +31,7 @@
           @click="$router.push(`/item/${listType}`)"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          + Add Item
+          + {{ listType === 'games' ? 'Add Game' : 'Add Item' }}
         </button>
       </div>
     </div>
@@ -46,8 +46,9 @@
     <SearchBar v-model="searchQuery" />
     
     <FilterButtons
-      v-if="listType !== 'supermarket'"
+      v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes'"
       v-model="filter"
+      :list-type="listType"
     />
 
     <LoadingSpinner v-if="loading" />
@@ -104,7 +105,7 @@ const searchedItems = computed(() => {
 })
 
 const filteredAndSearchedItems = computed(() => {
-  return filterItems(searchedItems.value, filter.value)
+  return filterItems(searchedItems.value, filter.value, listType)
 })
 
 onMounted(() => {

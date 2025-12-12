@@ -30,18 +30,58 @@ export const useNotificationsStore = defineStore('notifications', () => {
   }
 
   const sendTestNotification = () => {
+    if (!('Notification' in window)) {
+      throw new Error('Notifications not supported')
+    }
+
     if (permission.value !== 'granted') {
       throw new Error('Notification permission not granted')
     }
 
-    new Notification('MindLists Test', {
-      body: 'Notifications are working!',
-      icon: '/vite.svg',
-      tag: 'test-notification'
-    })
+    try {
+      const notification = new Notification('MindLists Test', {
+        body: 'Notifications are working!',
+        icon: '/pwa-192x192.png',
+        tag: 'test-notification',
+        requireInteraction: false
+      })
+
+      setTimeout(() => notification.close(), 5000)
+    } catch (error) {
+      console.error('Failed to create notification:', error)
+      throw error
+    }
+  }
+
+  const sendPreviewNotification = (title: string, message: string) => {
+    if (!('Notification' in window)) {
+      throw new Error('Notifications not supported')
+    }
+
+    if (permission.value !== 'granted') {
+      throw new Error('Notification permission not granted')
+    }
+
+    try {
+      const notification = new Notification(`MindLists - ${title}`, {
+        body: message,
+        icon: '/pwa-192x192.png',
+        tag: `preview-${Date.now()}`,
+        requireInteraction: false
+      })
+
+      setTimeout(() => notification.close(), 5000)
+    } catch (error) {
+      console.error('Failed to create preview notification:', error)
+      throw error
+    }
   }
 
   const scheduleNotification = (item: ListItem, listType: ListType, time: Date, message: string): string | null => {
+    if (!('Notification' in window)) {
+      return null
+    }
+
     if (permission.value !== 'granted') {
       return null
     }
@@ -56,15 +96,20 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     const notificationId = `${item.id}-${scheduledTime}`
     const timeoutId = window.setTimeout(() => {
-      new Notification(`MindLists - ${item.title}`, {
-        body: message,
-        icon: '/vite.svg',
-        tag: notificationId,
-        data: {
-          itemId: item.id,
-          listType
-        }
-      })
+      try {
+        new Notification(`MindLists - ${item.title}`, {
+          body: message,
+          icon: '/pwa-192x192.png',
+          tag: notificationId,
+          requireInteraction: false,
+          data: {
+            itemId: item.id,
+            listType
+          }
+        })
+      } catch (error) {
+        console.error('Failed to show scheduled notification:', error)
+      }
       scheduledNotifications.value.delete(notificationId)
     }, delay)
 
@@ -133,6 +178,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     checkPermission,
     requestPermission,
     sendTestNotification,
+    sendPreviewNotification,
     scheduleNotification,
     cancelNotification,
     scheduleItemNotifications,

@@ -1,7 +1,12 @@
 <template>
   <div class="max-w-2xl mx-auto">
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-2xl font-bold mb-6">{{ isEditing ? 'Edit Item' : 'New Item' }}</h2>
+      <h2 class="text-2xl font-bold mb-6">
+        {{ isEditing 
+          ? (listType === 'games' ? 'Edit Game' : 'Edit Item')
+          : (listType === 'games' ? 'New Game' : 'New Item')
+        }}
+      </h2>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
         <div>
@@ -16,7 +21,7 @@
           />
         </div>
 
-        <div>
+        <div v-if="listType !== 'travel'">
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
@@ -28,32 +33,54 @@
         </div>
 
         <PhotoUpload
-          v-if="listType === 'supermarket'"
+          v-if="(listType === 'supermarket' || listType === 'games' || listType === 'travel') && listType !== 'passcodes'"
           v-model="formData.photoUrl"
         />
 
-        <TagInput
-          v-if="listType !== 'supermarket'"
-          v-model="formData.tags"
-        />
-
         <DatePicker
-          v-if="listType !== 'supermarket'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games'"
           v-model="formData.expiryDate"
           label="Expiry Date"
         />
 
         <ReminderTimeDropdown
-          v-if="listType !== 'supermarket'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games'"
           v-model="formData.notificationTime"
           :expiry-date="formData.expiryDate"
+          :item-title="formData.title"
         />
 
         <NotificationConfig
-          v-if="listType !== 'supermarket' && formData.expiryDate"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && formData.expiryDate"
           v-model="formData.notificationPresets"
           :expiry-date="formData.expiryDate"
+          :item-title="formData.title"
         />
+
+        <div v-if="listType === 'games'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Status
+          </label>
+          <select
+            v-model="formData.gameStatus"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="will-play">Will Play</option>
+            <option value="played">Played</option>
+          </select>
+        </div>
+
+        <div v-if="listType === 'games'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            YouTube Link
+          </label>
+          <input
+            v-model="formData.youtubeLink"
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
         <PriceHistory
           v-if="listType === 'supermarket'"
@@ -89,14 +116,16 @@
           @click="handleDelete"
           class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
-          Delete Item
+          {{ listType === 'games' ? 'Delete Game' : 'Delete Item' }}
         </button>
       </form>
 
       <ConfirmDialog
         :show="showDeleteConfirm"
-        title="Delete Item"
-        message="Are you sure you want to delete this item? This action cannot be undone."
+        :title="listType === 'games' ? 'Delete Game' : 'Delete Item'"
+        :message="listType === 'games' 
+          ? 'Are you sure you want to delete this game? This action cannot be undone.'
+          : 'Are you sure you want to delete this item? This action cannot be undone.'"
         confirm-text="Delete"
         @confirm="confirmDelete"
         @cancel="showDeleteConfirm = false"
@@ -113,7 +142,6 @@ import { useItemsStore } from '@/stores/items'
 import { useFirestore } from '@/composables/useFirestore'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
-import TagInput from './TagInput.vue'
 import DatePicker from './DatePicker.vue'
 import ReminderTimeDropdown from './ReminderTimeDropdown.vue'
 import NotificationConfig from './NotificationConfig.vue'
@@ -142,7 +170,9 @@ const formData = ref<Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>>({
   notificationTime: undefined,
   notificationPresets: [],
   photoUrl: undefined,
-  priceHistory: []
+  priceHistory: [],
+  youtubeLink: undefined,
+  gameStatus: 'will-play'
 })
 
 onMounted(async () => {
@@ -159,7 +189,9 @@ onMounted(async () => {
           notificationTime: item.notificationTime,
           notificationPresets: item.notificationPresets || [],
           photoUrl: item.photoUrl,
-          priceHistory: item.priceHistory || []
+          priceHistory: item.priceHistory || [],
+          youtubeLink: item.youtubeLink,
+          gameStatus: item.gameStatus || 'will-play'
         }
       }
     } catch (err: any) {

@@ -3,20 +3,31 @@
     <label class="block text-sm font-medium text-gray-700 mb-2">
       Reminder Time
     </label>
-    <select
-      :value="selectedValue"
-      @change="handleChange"
-      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      <option value="">No reminder</option>
-      <option
-        v-for="option in reminderOptions"
-        :key="option.value"
-        :value="option.value"
+    <div class="flex gap-2">
+      <select
+        :value="selectedValue"
+        @change="handleChange"
+        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        {{ option.label }}
-      </option>
-    </select>
+        <option value="">No reminder</option>
+        <option
+          v-for="option in reminderOptions"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.label }}
+        </option>
+      </select>
+      <button
+        v-if="selectedValue"
+        @click="previewNotification"
+        class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+        :disabled="!hasPermission"
+        :title="hasPermission ? 'Preview notification' : 'Enable notifications first'"
+      >
+        Preview
+      </button>
+    </div>
     <p v-if="calculatedTime && selectedValue" class="mt-2 text-sm text-gray-600">
       Reminder will be sent at: {{ calculatedTime }}
     </p>
@@ -26,15 +37,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { formatDateTime } from '@/utils/date'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const props = defineProps<{
   modelValue: string | undefined
   expiryDate?: string
+  itemTitle?: string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | undefined]
 }>()
+
+const notificationsStore = useNotificationsStore()
 
 const reminderOptions = [
   { value: '1', label: '1 hour before' },
@@ -46,6 +61,8 @@ const reminderOptions = [
   { value: '72', label: '3 days before' },
   { value: '168', label: '1 week before' }
 ]
+
+const hasPermission = computed(() => notificationsStore.permission === 'granted')
 
 const selectedValue = computed(() => {
   if (!props.modelValue || !props.expiryDate) return ''
@@ -93,6 +110,19 @@ const handleChange = (event: Event) => {
     emit('update:modelValue', reminderTime.toISOString())
   }
 }
+
+const previewNotification = () => {
+  try {
+    const title = props.itemTitle || 'Your Item'
+    const hours = parseInt(selectedValue.value)
+    const option = reminderOptions.find(opt => opt.value === selectedValue.value)
+    const message = `Reminder: ${title} (${option?.label})`
+    notificationsStore.sendPreviewNotification(title, message)
+  } catch (error) {
+    console.error('Failed to send preview notification:', error)
+  }
+}
 </script>
+
 
 

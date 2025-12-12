@@ -82,6 +82,8 @@ export interface ListItem {
   notificationIds?: string[]
   photoUrl?: string
   priceHistory: PriceEntry[]
+  youtubeLink?: string
+  gameStatus?: 'played' | 'will-play'
   createdAt: string
   updatedAt: string
 }
@@ -98,7 +100,7 @@ export interface SavedList {
   updatedAt: string
 }
 
-export type FilterType = 'all' | 'active' | 'expiring' | 'expired'
+export type FilterType = 'all' | 'active' | 'expiring' | 'expired' | 'played' | 'will-play'
 
 export interface ExpiryStatus {
   status: 'expired' | 'expiring-soon' | 'expiring' | 'ok'
