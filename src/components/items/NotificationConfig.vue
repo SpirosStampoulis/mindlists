@@ -19,9 +19,8 @@
           <span class="text-sm text-gray-700">{{ preset.label }}</span>
         </label>
         <button
-          v-if="selectedPresets.includes(preset.value)"
           @click="previewNotification(preset)"
-          class="ml-2 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+          class="ml-2 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="!hasPermission"
           :title="hasPermission ? 'Preview notification' : 'Enable notifications first'"
         >
@@ -89,13 +88,14 @@ const togglePreset = (preset: NotificationPreset) => {
   }
 }
 
-const previewNotification = (preset: { value: NotificationPreset; label: string }) => {
+const previewNotification = async (preset: { value: NotificationPreset; label: string }) => {
   try {
     const title = props.itemTitle || 'Your Item'
     const message = `${title} expires in ${preset.value} hours`
-    notificationsStore.sendPreviewNotification(title, message)
+    await notificationsStore.sendPreviewNotification(title, message)
   } catch (error) {
     console.error('Failed to send preview notification:', error)
+    alert('Failed to show notification preview. Please check notification permissions.')
   }
 }
 </script>

@@ -68,11 +68,11 @@ const requestPermission = async () => {
   permission.value = granted ? 'granted' : 'denied'
 }
 
-const sendTest = () => {
+const sendTest = async () => {
   try {
-    notificationsStore.sendTestNotification()
+    await notificationsStore.sendTestNotification()
   } catch (err) {
-    alert('Failed to send test notification')
+    alert('Failed to send test notification. Please check notification permissions.')
   }
 }
 </script>

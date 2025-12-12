@@ -111,14 +111,15 @@ const handleChange = (event: Event) => {
   }
 }
 
-const previewNotification = () => {
+const previewNotification = async () => {
   try {
     const title = props.itemTitle || 'Your Item'
     const option = reminderOptions.find(opt => opt.value === selectedValue.value)
     const message = `Reminder: ${title} (${option?.label})`
-    notificationsStore.sendPreviewNotification(title, message)
+    await notificationsStore.sendPreviewNotification(title, message)
   } catch (error) {
     console.error('Failed to send preview notification:', error)
+    alert('Failed to show notification preview. Please check notification permissions.')
   }
 }
 </script>

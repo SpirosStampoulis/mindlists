@@ -29,7 +29,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     return result === 'granted'
   }
 
-  const sendTestNotification = () => {
+  const sendTestNotification = async () => {
     if (!('Notification' in window)) {
       throw new Error('Notifications not supported')
     }
@@ -39,21 +39,31 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     try {
-      const notification = new Notification('MindLists Test', {
-        body: 'Notifications are working!',
-        icon: '/pwa-192x192.png',
-        tag: 'test-notification',
-        requireInteraction: false
-      })
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const registration = await navigator.serviceWorker.ready
+        await registration.showNotification('MindLists Test', {
+          body: 'Notifications are working!',
+          icon: '/pwa-192x192.png',
+          tag: 'test-notification',
+          requireInteraction: false
+        })
+      } else {
+        const notification = new Notification('MindLists Test', {
+          body: 'Notifications are working!',
+          icon: '/pwa-192x192.png',
+          tag: 'test-notification',
+          requireInteraction: false
+        })
 
-      setTimeout(() => notification.close(), 5000)
+        setTimeout(() => notification.close(), 5000)
+      }
     } catch (error) {
       console.error('Failed to create notification:', error)
       throw error
     }
   }
 
-  const sendPreviewNotification = (title: string, message: string) => {
+  const sendPreviewNotification = async (title: string, message: string) => {
     if (!('Notification' in window)) {
       throw new Error('Notifications not supported')
     }
@@ -63,14 +73,24 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     try {
-      const notification = new Notification(`MindLists - ${title}`, {
-        body: message,
-        icon: '/pwa-192x192.png',
-        tag: `preview-${Date.now()}`,
-        requireInteraction: false
-      })
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const registration = await navigator.serviceWorker.ready
+        await registration.showNotification(`MindLists - ${title}`, {
+          body: message,
+          icon: '/pwa-192x192.png',
+          tag: `preview-${Date.now()}`,
+          requireInteraction: false
+        })
+      } else {
+        const notification = new Notification(`MindLists - ${title}`, {
+          body: message,
+          icon: '/pwa-192x192.png',
+          tag: `preview-${Date.now()}`,
+          requireInteraction: false
+        })
 
-      setTimeout(() => notification.close(), 5000)
+        setTimeout(() => notification.close(), 5000)
+      }
     } catch (error) {
       console.error('Failed to create preview notification:', error)
       throw error
@@ -95,18 +115,32 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     const notificationId = `${item.id}-${scheduledTime}`
-    const timeoutId = window.setTimeout(() => {
+    const timeoutId = window.setTimeout(async () => {
       try {
-        new Notification(`MindLists - ${item.title}`, {
-          body: message,
-          icon: '/pwa-192x192.png',
-          tag: notificationId,
-          requireInteraction: false,
-          data: {
-            itemId: item.id,
-            listType
-          }
-        })
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          const registration = await navigator.serviceWorker.ready
+          await registration.showNotification(`MindLists - ${item.title}`, {
+            body: message,
+            icon: '/pwa-192x192.png',
+            tag: notificationId,
+            requireInteraction: false,
+            data: {
+              itemId: item.id,
+              listType
+            }
+          })
+        } else {
+          new Notification(`MindLists - ${item.title}`, {
+            body: message,
+            icon: '/pwa-192x192.png',
+            tag: notificationId,
+            requireInteraction: false,
+            data: {
+              itemId: item.id,
+              listType
+            }
+          })
+        }
       } catch (error) {
         console.error('Failed to show scheduled notification:', error)
       }

@@ -21,13 +21,6 @@
           📋 Saved Lists
         </button>
         <button
-          v-if="listType === 'reminders'"
-          @click="handlePreviewNotification"
-          class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-        >
-          🔔 Preview Notification
-        </button>
-        <button
           @click="$router.push(`/item/${listType}`)"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
@@ -74,7 +67,6 @@ import ItemList from './ItemList.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import SavedListsManager from '@/components/supermarket/SavedListsManager.vue'
 import { useItemsStore } from '@/stores/items'
-import { useNotificationsStore } from '@/stores/notifications'
 import type { SavedListItem } from '@/types'
 
 const route = useRoute()
@@ -83,7 +75,6 @@ const config = LIST_TYPE_CONFIGS[listType]
 
 const listsStore = useListsStore()
 const itemsStore = useItemsStore()
-const notificationsStore = useNotificationsStore()
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const filter = ref<FilterType>('all')
@@ -134,34 +125,6 @@ const handleLoadSavedList = async (itemsToLoad: SavedListItem[]) => {
   } catch (err: any) {
     console.error('Failed to load saved list:', err)
     alert(err.message || 'Failed to load saved list. Please try again.')
-  }
-}
-
-const handlePreviewNotification = async () => {
-  try {
-    await notificationsStore.checkPermission()
-    
-    if (notificationsStore.permission !== 'granted') {
-      const granted = await notificationsStore.requestPermission()
-      if (!granted) {
-        alert('Notification permission is required to preview notifications. Please enable notifications in your browser settings.')
-        return
-      }
-    }
-
-    const exampleTitle = items.value.length > 0 
-      ? items.value[0].title 
-      : 'Meeting with Team'
-
-    new Notification(`MindLists - ${exampleTitle}`, {
-      body: 'Reminder: This is how your reminder notifications will look on your phone',
-      icon: '/icon-192.svg',
-      tag: 'preview-notification',
-      badge: '/icon-192.svg'
-    })
-  } catch (err: any) {
-    console.error('Failed to send preview notification:', err)
-    alert(err.message || 'Failed to send preview notification. Please check your browser notification settings.')
   }
 }
 </script>
