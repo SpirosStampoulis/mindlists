@@ -44,15 +44,18 @@ export const useNotificationsStore = defineStore('notifications', () => {
         await registration.showNotification('MindLists Test', {
           body: 'Notifications are working!',
           icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
           tag: 'test-notification',
-          requireInteraction: false
-        })
+          requireInteraction: true,
+          silent: false
+        } as NotificationOptions)
       } else {
         const notification = new Notification('MindLists Test', {
           body: 'Notifications are working!',
           icon: '/pwa-192x192.png',
           tag: 'test-notification',
-          requireInteraction: false
+          requireInteraction: false,
+          silent: false
         })
 
         setTimeout(() => notification.close(), 5000)
@@ -78,15 +81,18 @@ export const useNotificationsStore = defineStore('notifications', () => {
         await registration.showNotification(`MindLists - ${title}`, {
           body: message,
           icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
           tag: `preview-${Date.now()}`,
-          requireInteraction: false
-        })
+          requireInteraction: true,
+          silent: false
+        } as NotificationOptions)
       } else {
         const notification = new Notification(`MindLists - ${title}`, {
           body: message,
           icon: '/pwa-192x192.png',
           tag: `preview-${Date.now()}`,
-          requireInteraction: false
+          requireInteraction: false,
+          silent: false
         })
 
         setTimeout(() => notification.close(), 5000)
@@ -122,19 +128,22 @@ export const useNotificationsStore = defineStore('notifications', () => {
           await registration.showNotification(`MindLists - ${item.title}`, {
             body: message,
             icon: '/pwa-192x192.png',
+            badge: '/pwa-192x192.png',
             tag: notificationId,
-            requireInteraction: false,
+            requireInteraction: true,
+            silent: false,
             data: {
               itemId: item.id,
               listType
             }
-          })
+          } as NotificationOptions)
         } else {
           new Notification(`MindLists - ${item.title}`, {
             body: message,
             icon: '/pwa-192x192.png',
             tag: notificationId,
             requireInteraction: false,
+            silent: false,
             data: {
               itemId: item.id,
               listType

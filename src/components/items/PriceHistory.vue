@@ -47,7 +47,7 @@
 
     <div class="mt-4 p-4 bg-blue-50 rounded-lg">
       <h4 class="font-medium mb-2">Add Price Entry</h4>
-      <div class="flex space-x-2">
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
         <input
           v-model.number="newPrice"
           type="number"
@@ -59,12 +59,12 @@
         <input
           v-model="newPriceDate"
           type="date"
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="flex-1 sm:flex-initial px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           @click="addPrice"
           :disabled="!newPrice || !newPriceDate"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
           Add
         </button>

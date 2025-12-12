@@ -19,3 +19,20 @@ authStore.init().then(() => {
   app.mount('#app')
 })
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then((registration) => {
+    registration.active?.postMessage({
+      type: 'INIT_NOTIFICATION_HANDLERS'
+    })
+  })
+
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'NOTIFICATION_CLICK') {
+      const { action, data } = event.data
+      if (action === 'view' && data?.listType) {
+        router.push(`/list/${data.listType}`)
+      }
+    }
+  })
+}
+

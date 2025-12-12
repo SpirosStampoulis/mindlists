@@ -1,28 +1,45 @@
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center space-x-4">
-        <button
-          @click="$router.back()"
-          class="text-gray-600 hover:text-gray-900"
-        >
-          ← Back
-        </button>
-        <h1 class="text-2xl font-bold" :style="{ color: config.color }">
-          {{ config.icon }} {{ config.name }}
-        </h1>
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4 md:mb-0">
+        <div class="flex items-center space-x-4">
+          <button
+            @click="$router.back()"
+            class="text-gray-600 hover:text-gray-900"
+          >
+            ← Back
+          </button>
+          <h1 class="text-2xl font-bold" :style="{ color: config.color }">
+            {{ config.icon }} {{ config.name }}
+          </h1>
+        </div>
+        <div class="hidden md:flex space-x-2">
+          <button
+            v-if="listType === 'supermarket'"
+            @click="showSavedLists = true"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            📋 Saved Lists
+          </button>
+          <button
+            @click="$router.push(`/item/${listType}`)"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            + {{ listType === 'games' ? 'Add Game' : 'Add Item' }}
+          </button>
+        </div>
       </div>
-      <div class="flex space-x-2">
+      <div class="flex md:hidden space-x-2 mt-4">
         <button
           v-if="listType === 'supermarket'"
           @click="showSavedLists = true"
-          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
           📋 Saved Lists
         </button>
         <button
           @click="$router.push(`/item/${listType}`)"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           + {{ listType === 'games' ? 'Add Game' : 'Add Item' }}
         </button>
