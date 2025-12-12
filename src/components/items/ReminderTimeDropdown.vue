@@ -114,7 +114,6 @@ const handleChange = (event: Event) => {
 const previewNotification = () => {
   try {
     const title = props.itemTitle || 'Your Item'
-    const hours = parseInt(selectedValue.value)
     const option = reminderOptions.find(opt => opt.value === selectedValue.value)
     const message = `Reminder: ${title} (${option?.label})`
     notificationsStore.sendPreviewNotification(title, message)

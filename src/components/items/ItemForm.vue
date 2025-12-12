@@ -33,7 +33,7 @@
         </div>
 
         <PhotoUpload
-          v-if="(listType === 'supermarket' || listType === 'games' || listType === 'travel') && listType !== 'passcodes'"
+          v-if="listType === 'supermarket' || listType === 'games' || listType === 'travel'"
           v-model="formData.photoUrl"
         />
 
