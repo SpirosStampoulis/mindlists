@@ -115,7 +115,7 @@ const previewNotification = async () => {
   try {
     const title = props.itemTitle || 'Your Item'
     const option = reminderOptions.find(opt => opt.value === selectedValue.value)
-    const message = `Reminder: ${title} (${option?.label})`
+    const message = option?.label || ''
     await notificationsStore.sendPreviewNotification(title, message)
   } catch (error) {
     console.error('Failed to send preview notification:', error)

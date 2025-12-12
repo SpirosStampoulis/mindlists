@@ -41,7 +41,11 @@
             </button>
           </div>
         </div>
-        <p class="text-sm text-gray-600 mb-4">{{ savedList.items.length }} items</p>
+        <p class="text-sm text-gray-600 mb-2">{{ savedList.items.length }} items</p>
+        <div v-if="calculateTotal(savedList) > 0" class="mb-4 bg-green-50 p-2 rounded">
+          <p class="text-sm text-gray-600">Total:</p>
+          <p class="text-xl font-bold text-green-600">€{{ calculateTotal(savedList).toFixed(2) }}</p>
+        </div>
         <button
           @click="loadList(savedList)"
           class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -177,6 +181,20 @@ const confirmDelete = async () => {
     showDeleteConfirm.value = false
     deletingListId.value = null
   }
+}
+
+const calculateTotal = (savedList: SavedList): number => {
+  return savedList.items.reduce((total, item) => {
+    if (item.priceHistory && item.priceHistory.length > 0) {
+      const sortedPrices = [...item.priceHistory].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      )
+      const latestPrice = sortedPrices[0].price
+      const quantity = item.quantity || 1
+      return total + (latestPrice * quantity)
+    }
+    return total
+  }, 0)
 }
 </script>
 

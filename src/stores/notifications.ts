@@ -173,7 +173,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     if (item.notificationTime) {
       const notificationTime = new Date(item.notificationTime)
-      const id = scheduleNotification(item, listType, notificationTime, `Reminder: ${item.title}`)
+      const id = scheduleNotification(item, listType, notificationTime, item.title)
       if (id) notificationIds.push(id)
     }
 
