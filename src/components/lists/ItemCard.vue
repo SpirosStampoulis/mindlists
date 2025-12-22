@@ -18,7 +18,7 @@
         @click.stop
       >
         <button
-          @click="$emit('moveUp', dragIndex)"
+          @click="handleMoveUp"
           :disabled="isFirst"
           class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
           title="Move up"
@@ -28,7 +28,7 @@
           </svg>
         </button>
         <button
-          @click="$emit('moveDown', dragIndex)"
+          @click="handleMoveDown"
           :disabled="isLast"
           class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
           title="Move down"
@@ -170,6 +170,18 @@ const getExpiryColorClass = () => {
   if (status.color === 'orange') return 'text-orange-600'
   if (status.color === 'yellow') return 'text-yellow-600'
   return 'text-green-600'
+}
+
+const handleMoveUp = () => {
+  if (props.dragIndex !== undefined) {
+    emit('moveUp', props.dragIndex)
+  }
+}
+
+const handleMoveDown = () => {
+  if (props.dragIndex !== undefined) {
+    emit('moveDown', props.dragIndex)
+  }
 }
 
 </script>
