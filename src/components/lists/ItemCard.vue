@@ -53,10 +53,10 @@
             class="w-12 h-12 object-cover rounded"
           />
         </div>
-        <p v-if="listType !== 'travel' && listType !== 'fitness' && item.description" class="text-sm text-gray-600 mt-1">
+        <p v-if="listType !== 'travel' && listType !== 'fitness' && listType !== 'diet' && item.description" class="text-sm text-gray-600 mt-1">
           {{ item.description }}
         </p>
-        <div v-if="listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && item.expiryDate" class="mt-2 text-sm" :class="getExpiryColorClass()">
+        <div v-if="listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'diet' && item.expiryDate" class="mt-2 text-sm" :class="getExpiryColorClass()">
           {{ formatExpiryDate(item.expiryDate) }}
         </div>
         <div v-if="listType !== 'travel' && listType !== 'passcodes' && item.priceHistory && item.priceHistory.length > 0" class="mt-2">
@@ -95,10 +95,6 @@
           </span>
         </div>
         <div v-if="listType === 'diet' && item.meals" class="mt-3 space-y-2">
-          <div v-if="item.meals.breakfast" class="text-sm">
-            <span class="font-medium text-gray-700">Breakfast:</span>
-            <span class="text-gray-600 ml-2">{{ item.meals.breakfast }}</span>
-          </div>
           <div v-if="item.meals.lunch" class="text-sm">
             <span class="font-medium text-gray-700">Lunch:</span>
             <span class="text-gray-600 ml-2">{{ item.meals.lunch }}</span>

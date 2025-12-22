@@ -8,10 +8,6 @@
       >
         <h3 class="font-semibold text-lg mb-3 capitalize">{{ day.label }}</h3>
         <div v-if="getDayMeal(day.value)" class="space-y-3">
-          <div v-if="getDayMeal(day.value)?.meals?.breakfast" class="text-sm">
-            <span class="font-medium text-gray-700">Breakfast:</span>
-            <p class="text-gray-600 mt-1">{{ getDayMeal(day.value)?.meals?.breakfast }}</p>
-          </div>
           <div v-if="getDayMeal(day.value)?.meals?.lunch" class="text-sm">
             <span class="font-medium text-gray-700">Lunch:</span>
             <p class="text-gray-600 mt-1">{{ getDayMeal(day.value)?.meals?.lunch }}</p>

@@ -21,7 +21,7 @@
           />
         </div>
 
-        <div v-if="listType !== 'travel' && listType !== 'fitness'">
+        <div v-if="listType !== 'travel' && listType !== 'fitness' && listType !== 'diet'">
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
@@ -38,20 +38,20 @@
         />
 
         <DatePicker
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet'"
           v-model="formData.expiryDate"
           label="Expiry Date"
         />
 
         <ReminderTimeDropdown
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet'"
           v-model="formData.notificationTime"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"
         />
 
         <NotificationConfig
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && formData.expiryDate"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && formData.expiryDate"
           v-model="formData.notificationPresets"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"
@@ -172,15 +172,6 @@
             Meals
           </label>
           <div class="space-y-3">
-            <div>
-              <label class="block text-sm text-gray-600 mb-1">Breakfast</label>
-              <input
-                v-model="formData.meals!.breakfast"
-                type="text"
-                placeholder="e.g., Oatmeal with berries"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
             <div>
               <label class="block text-sm text-gray-600 mb-1">Lunch</label>
               <input
@@ -349,7 +340,6 @@ onMounted(async () => {
     formData.value.dayOfWeek = route.query.dayOfWeek as any
     formData.value.title = `Meals for ${(route.query.dayOfWeek as string).charAt(0).toUpperCase() + (route.query.dayOfWeek as string).slice(1)}`
     formData.value.meals = {
-      breakfast: undefined,
       lunch: undefined,
       dinner: undefined,
       snacks: undefined
@@ -363,7 +353,6 @@ onMounted(async () => {
     formData.value.title = `Exercise Day ${maxOrder + 2}`
   } else if (listType === 'diet') {
     formData.value.meals = {
-      breakfast: undefined,
       lunch: undefined,
       dinner: undefined,
       snacks: undefined
