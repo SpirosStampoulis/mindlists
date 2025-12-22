@@ -56,8 +56,9 @@
             Play on YouTube
           </a>
         </div>
-        <div v-if="listType === 'games' && item.gameStatus" class="mt-2">
+        <div v-if="listType === 'games'" class="mt-2 flex flex-wrap gap-2">
           <span
+            v-if="item.gameStatus"
             :class="[
               'px-2 py-1 text-xs rounded font-medium',
               item.gameStatus === 'played'
@@ -66,6 +67,18 @@
             ]"
           >
             {{ item.gameStatus === 'played' ? 'Played' : 'Will Play' }}
+          </span>
+          <span
+            v-if="item.platform"
+            class="px-2 py-1 text-xs rounded font-medium bg-purple-100 text-purple-800"
+          >
+            {{ item.platform === 'switch' ? 'Switch' : 'PC' }}
+          </span>
+          <span
+            v-if="item.finishedYear"
+            class="px-2 py-1 text-xs rounded font-medium bg-indigo-100 text-indigo-800"
+          >
+            Finished {{ item.finishedYear }}
           </span>
         </div>
       </div>

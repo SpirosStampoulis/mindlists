@@ -84,6 +84,8 @@ export interface ListItem {
   priceHistory: PriceEntry[]
   youtubeLink?: string
   gameStatus?: 'played' | 'will-play'
+  platform?: 'switch' | 'pc'
+  finishedYear?: number
   createdAt: string
   updatedAt: string
 }
@@ -96,6 +98,7 @@ export interface SavedList {
   id: string
   name: string
   items: SavedListItem[]
+  date?: string
   createdAt: string
   updatedAt: string
 }

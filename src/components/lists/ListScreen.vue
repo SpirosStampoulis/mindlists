@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { ListType, FilterType } from '@/types'
 import { LIST_TYPE_CONFIGS } from '@/types'
 import { useListsStore } from '@/stores/lists'
@@ -87,6 +87,7 @@ import { useItemsStore } from '@/stores/items'
 import type { SavedListItem } from '@/types'
 
 const route = useRoute()
+const router = useRouter()
 const listType = route.params.type as ListType
 const config = LIST_TYPE_CONFIGS[listType]
 
@@ -117,6 +118,10 @@ const filteredAndSearchedItems = computed(() => {
 })
 
 onMounted(() => {
+  if (listType === 'supermarket') {
+    router.replace('/list/supermarket/saved')
+    return
+  }
   listsStore.subscribeToList(listType)
 })
 

@@ -16,6 +16,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/list/supermarket/saved',
+    name: 'saved-lists',
+    component: () => import('@/views/SavedListsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/list/supermarket/saved/:id',
+    name: 'saved-list-detail',
+    component: () => import('@/views/SavedListDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/item/:listType/:itemId?',
     name: 'item',
     component: () => import('@/views/ItemView.vue'),

@@ -47,10 +47,10 @@
           <p class="text-xl font-bold text-green-600">€{{ calculateTotal(savedList).toFixed(2) }}</p>
         </div>
         <button
-          @click="loadList(savedList)"
+          @click="navigateToDetail(savedList.id)"
           class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
-          Load List
+          View List
         </button>
       </div>
 
@@ -59,13 +59,6 @@
       </div>
     </div>
 
-    <LoadListDialog
-      :show="showLoadDialog"
-      :saved-list="listToLoad"
-      :current-items="currentItems"
-      @confirm="confirmLoadList"
-      @cancel="showLoadDialog = false"
-    />
 
     <ConfirmDialog
       :show="showDeleteConfirm"
@@ -80,21 +73,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { SavedList, ListItem, SavedListItem } from '@/types'
+import { useRouter } from 'vue-router'
+import type { SavedList, ListItem } from '@/types'
 import { useSavedLists } from '@/composables/useSavedLists'
 import { useAuthStore } from '@/stores/auth'
 import SavedListForm from './SavedListForm.vue'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
-import LoadListDialog from './LoadListDialog.vue'
 
 defineProps<{
   currentItems: ListItem[]
 }>()
 
-const emit = defineEmits<{
-  load: [items: SavedListItem[]]
-}>()
-
+const router = useRouter()
 const authStore = useAuthStore()
 const { getSavedLists, createSavedList, updateSavedList, deleteSavedList } = useSavedLists()
 
@@ -104,8 +94,6 @@ const editingList = ref<SavedList | undefined>(undefined)
 const showDeleteConfirm = ref(false)
 const deletingListId = ref<string | null>(null)
 const loading = ref(false)
-const showLoadDialog = ref(false)
-const listToLoad = ref<SavedList | undefined>(undefined)
 
 onMounted(async () => {
   await loadSavedLists()
@@ -151,17 +139,8 @@ const editList = (savedList: SavedList) => {
   showCreateForm.value = false
 }
 
-const loadList = (savedList: SavedList) => {
-  listToLoad.value = savedList
-  showLoadDialog.value = true
-}
-
-const confirmLoadList = () => {
-  if (listToLoad.value) {
-    emit('load', listToLoad.value.items)
-    showLoadDialog.value = false
-    listToLoad.value = undefined
-  }
+const navigateToDetail = (savedListId: string) => {
+  router.push(`/list/supermarket/saved/${savedListId}`)
 }
 
 const deleteList = (savedListId: string) => {
@@ -184,14 +163,23 @@ const confirmDelete = async () => {
 }
 
 const calculateTotal = (savedList: SavedList): number => {
+  const listDate = savedList.date ? new Date(savedList.date).getTime() : Date.now()
+  
   return savedList.items.reduce((total, item) => {
     if (item.priceHistory && item.priceHistory.length > 0) {
-      const sortedPrices = [...item.priceHistory].sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-      const latestPrice = sortedPrices[0].price
-      const quantity = item.quantity || 1
-      return total + (latestPrice * quantity)
+      const validPrices = item.priceHistory.filter(entry => {
+        const entryDate = new Date(entry.date).getTime()
+        return entryDate <= listDate
+      })
+      
+      if (validPrices.length > 0) {
+        const sortedPrices = [...validPrices].sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+        const latestPrice = sortedPrices[0].price
+        const quantity = item.quantity || 1
+        return total + (latestPrice * quantity)
+      }
     }
     return total
   }, 0)

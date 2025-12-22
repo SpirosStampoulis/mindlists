@@ -17,6 +17,20 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
+          Date (for price history)
+        </label>
+        <input
+          v-model="dateInput"
+          type="date"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p class="text-xs text-gray-500 mt-1">
+          Prices will be shown from this date and before
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
           Items
         </label>
         <div class="space-y-2 max-h-64 overflow-y-auto">
@@ -79,11 +93,22 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+const formatDateForInput = (dateString: string): string => {
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 const loading = ref(false)
 const selectedItems = ref<string[]>([])
 const itemQuantities = ref<Record<string, number>>({})
+const dateInput = ref(props.savedList?.date ? formatDateForInput(props.savedList.date) : '')
+
 const formData = ref({
   name: props.savedList?.name || '',
+  date: props.savedList?.date || undefined,
   items: [] as SavedListItem[]
 })
 
@@ -91,6 +116,9 @@ const isEditing = computed(() => !!props.savedList)
 
 onMounted(() => {
   if (props.savedList) {
+    if (props.savedList.date) {
+      dateInput.value = formatDateForInput(props.savedList.date)
+    }
     selectedItems.value = props.savedList.items
       .map(savedItem => {
         const matchingItem = props.availableItems.find(
@@ -132,8 +160,16 @@ const handleSubmit = () => {
       return cleanedItem
     })
 
+  let dateValue: string | undefined = undefined
+  if (dateInput.value) {
+    const date = new Date(dateInput.value)
+    date.setHours(23, 59, 59, 999)
+    dateValue = date.toISOString()
+  }
+
   emit('save', {
     name: formData.value.name,
+    date: dateValue,
     items: selectedItemsData
   })
 }
