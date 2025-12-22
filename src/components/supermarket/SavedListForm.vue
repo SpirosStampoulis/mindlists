@@ -149,12 +149,19 @@ const toggleItem = (itemId: string) => {
 const handleSubmit = () => {
   const selectedItemsData: SavedListItem[] = props.availableItems
     .filter(item => selectedItems.value.includes(item.id))
-    .map(item => {
+    .map((item, index) => {
       const { id, createdAt, updatedAt, ...itemData } = item
       const cleanedItem: SavedListItem = { ...itemData } as SavedListItem
       
       if (itemQuantities.value[item.id]) {
         cleanedItem.quantity = itemQuantities.value[item.id]
+      }
+      
+      if (isEditing.value && props.savedList) {
+        const existingItem = props.savedList.items.find(savedItem => savedItem.title === item.title)
+        cleanedItem.order = existingItem?.order ?? index
+      } else {
+        cleanedItem.order = index
       }
       
       return cleanedItem

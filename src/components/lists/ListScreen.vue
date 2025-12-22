@@ -25,7 +25,7 @@
             @click="$router.push(`/item/${listType}`)"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            + {{ listType === 'games' ? 'Add Game' : 'Add Item' }}
+            + {{ listType === 'games' ? 'Add Game' : listType === 'fitness' ? 'Add Exercise Day' : listType === 'diet' ? 'Add Meal Plan' : 'Add Item' }}
           </button>
         </div>
       </div>
@@ -41,7 +41,7 @@
           @click="$router.push(`/item/${listType}`)"
           class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          + {{ listType === 'games' ? 'Add Game' : 'Add Item' }}
+          + {{ listType === 'games' ? 'Add Game' : listType === 'fitness' ? 'Add Exercise Day' : listType === 'diet' ? 'Add Meal Plan' : 'Add Item' }}
         </button>
       </div>
     </div>
@@ -53,15 +53,19 @@
       />
     </div>
 
-    <SearchBar v-model="searchQuery" />
+    <SearchBar v-if="listType !== 'diet'" v-model="searchQuery" />
     
     <FilterButtons
-      v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes'"
+      v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'diet' && listType !== 'fitness'"
       v-model="filter"
       :list-type="listType"
     />
 
     <LoadingSpinner v-if="loading" />
+    <WeeklyMealPlan
+      v-else-if="listType === 'diet'"
+      :items="items"
+    />
     <ItemList
       v-else
       :items="filteredAndSearchedItems"
@@ -83,6 +87,7 @@ import FilterButtons from '@/components/shared/FilterButtons.vue'
 import ItemList from './ItemList.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import SavedListsManager from '@/components/supermarket/SavedListsManager.vue'
+import WeeklyMealPlan from '@/components/diet/WeeklyMealPlan.vue'
 import { useItemsStore } from '@/stores/items'
 import type { SavedListItem } from '@/types'
 

@@ -47,17 +47,42 @@
           <h2 class="text-xl font-semibold mb-4">Items</h2>
           <div class="space-y-3">
             <div
-              v-for="(item, index) in savedList.items"
+              v-for="(item, index) in sortedItems"
               :key="index"
-              class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+              class="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-start space-x-3"
             >
-              <div class="flex flex-col">
+              <div
+                class="flex flex-col gap-1 flex-shrink-0"
+                @click.stop
+              >
+                <button
+                  @click="handleMoveUp(index)"
+                  :disabled="index === 0"
+                  class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Move up"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+                <button
+                  @click="handleMoveDown(index)"
+                  :disabled="index === sortedItems.length - 1"
+                  class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Move down"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+              <div class="flex-1">
                 <img
                   v-if="item.photoUrl && !item.photoUrl.startsWith('blob:')"
                   :src="item.photoUrl"
                   :alt="item.title"
                   class="w-full h-48 object-cover rounded-lg mb-3"
-                />
+                >
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center space-x-3 mb-2">
                     <h3 class="text-lg font-medium text-gray-800">{{ item.title }}</h3>
@@ -95,7 +120,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import type { SavedList } from '@/types'
+import type { SavedList, SavedListItem } from '@/types'
 import { useSavedLists } from '@/composables/useSavedLists'
 import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/components/layout/AppLayout.vue'
@@ -104,10 +129,28 @@ import { formatDate as formatDateUtil } from '@/utils/date'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const { getSavedList } = useSavedLists()
+const { getSavedList, updateSavedList } = useSavedLists()
 
 const savedList = ref<SavedList | null>(null)
 const loading = ref(true)
+
+const sortedItems = computed(() => {
+  if (!savedList.value) return []
+  const items = [...savedList.value.items]
+  
+  const itemsWithOrder = items.filter(item => item.order !== undefined && item.order !== null)
+  const itemsWithoutOrder = items.filter(item => item.order === undefined || item.order === null)
+  
+  if (itemsWithOrder.length === 0 && itemsWithoutOrder.length > 0) {
+    return itemsWithoutOrder.map((item, index) => ({ ...item, order: index }))
+  }
+  
+  return items.sort((a, b) => {
+    const orderA = a.order ?? Number.MAX_SAFE_INTEGER
+    const orderB = b.order ?? Number.MAX_SAFE_INTEGER
+    return orderA - orderB
+  })
+})
 
 onMounted(async () => {
   await loadSavedList()
@@ -212,6 +255,50 @@ const itemsWithPrice = computed(() => {
 
 const formatDate = (dateString: string): string => {
   return formatDateUtil(dateString)
+}
+
+const handleMoveUp = async (index: number) => {
+  if (!savedList.value || !authStore.userId || index === 0) return
+  
+  try {
+    const items = [...sortedItems.value]
+    
+    const updatedItems = items.map((it, idx) => {
+      if (idx === index) {
+        return { ...it, order: index - 1 }
+      } else if (idx === index - 1) {
+        return { ...it, order: index }
+      }
+      return { ...it, order: it.order ?? idx }
+    })
+    
+    await updateSavedList(authStore.userId, savedList.value.id, { items: updatedItems })
+    await loadSavedList()
+  } catch (err) {
+    console.error('Failed to move item up:', err)
+  }
+}
+
+const handleMoveDown = async (index: number) => {
+  if (!savedList.value || !authStore.userId || index === sortedItems.value.length - 1) return
+  
+  try {
+    const items = [...sortedItems.value]
+    
+    const updatedItems = items.map((it, idx) => {
+      if (idx === index) {
+        return { ...it, order: index + 1 }
+      } else if (idx === index + 1) {
+        return { ...it, order: index }
+      }
+      return { ...it, order: it.order ?? idx }
+    })
+    
+    await updateSavedList(authStore.userId, savedList.value.id, { items: updatedItems })
+    await loadSavedList()
+  } catch (err) {
+    console.error('Failed to move item down:', err)
+  }
 }
 </script>
 

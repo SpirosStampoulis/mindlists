@@ -1,7 +1,20 @@
 import type { ListItem, FilterType } from '@/types'
 
-export const sortItems = (items: ListItem[]): ListItem[] => {
+export const sortItems = (items: ListItem[], listType?: string): ListItem[] => {
   return [...items].sort((a, b) => {
+    if (listType === 'fitness' && a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order
+    }
+
+    if (listType === 'games' || listType === 'supermarket') {
+      if (a.checked !== b.checked) {
+        return a.checked ? 1 : -1
+      }
+      const titleA = a.title.toLowerCase()
+      const titleB = b.title.toLowerCase()
+      return titleA.localeCompare(titleB)
+    }
+
     if (a.checked !== b.checked) {
       return a.checked ? 1 : -1
     }

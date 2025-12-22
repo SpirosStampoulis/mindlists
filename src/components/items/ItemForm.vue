@@ -21,7 +21,7 @@
           />
         </div>
 
-        <div v-if="listType !== 'travel'">
+        <div v-if="listType !== 'travel' && listType !== 'fitness'">
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
@@ -38,20 +38,20 @@
         />
 
         <DatePicker
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness'"
           v-model="formData.expiryDate"
           label="Expiry Date"
         />
 
         <ReminderTimeDropdown
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness'"
           v-model="formData.notificationTime"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"
         />
 
         <NotificationConfig
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && formData.expiryDate"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && formData.expiryDate"
           v-model="formData.notificationPresets"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"
@@ -108,6 +108,107 @@
             placeholder="https://www.youtube.com/watch?v=..."
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        <div v-if="listType === 'fitness'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Day Type
+          </label>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                :value="false"
+                v-model="formData.isDayOff"
+                class="mr-2"
+              />
+              Exercise Day
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                :value="true"
+                v-model="formData.isDayOff"
+                class="mr-2"
+              />
+              Day Off
+            </label>
+          </div>
+        </div>
+
+        <div v-if="listType === 'fitness' && !formData.isDayOff">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            YouTube Link
+          </label>
+          <input
+            v-model="formData.youtubeLink"
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div v-if="listType === 'diet'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Day of Week
+          </label>
+          <select
+            v-model="formData.dayOfWeek"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option :value="undefined">Select Day</option>
+            <option value="monday">Monday</option>
+            <option value="tuesday">Tuesday</option>
+            <option value="wednesday">Wednesday</option>
+            <option value="thursday">Thursday</option>
+            <option value="friday">Friday</option>
+            <option value="saturday">Saturday</option>
+            <option value="sunday">Sunday</option>
+          </select>
+        </div>
+
+        <div v-if="listType === 'diet' && formData.dayOfWeek">
+          <label class="block text-sm font-medium text-gray-700 mb-4">
+            Meals
+          </label>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Breakfast</label>
+              <input
+                v-model="formData.meals!.breakfast"
+                type="text"
+                placeholder="e.g., Oatmeal with berries"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Lunch</label>
+              <input
+                v-model="formData.meals!.lunch"
+                type="text"
+                placeholder="e.g., Grilled chicken salad"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Dinner</label>
+              <input
+                v-model="formData.meals!.dinner"
+                type="text"
+                placeholder="e.g., Salmon with vegetables"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Snacks</label>
+              <input
+                v-model="formData.meals!.snacks"
+                type="text"
+                placeholder="e.g., Apple, nuts"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
         </div>
 
         <PriceHistory
@@ -170,6 +271,7 @@ import { useItemsStore } from '@/stores/items'
 import { useFirestore } from '@/composables/useFirestore'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
+import { useListsStore } from '@/stores/lists'
 import DatePicker from './DatePicker.vue'
 import ReminderTimeDropdown from './ReminderTimeDropdown.vue'
 import NotificationConfig from './NotificationConfig.vue'
@@ -186,6 +288,7 @@ const isEditing = computed(() => !!itemId)
 const itemsStore = useItemsStore()
 const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
+const listsStore = useListsStore()
 const loading = ref(false)
 const showDeleteConfirm = ref(false)
 
@@ -202,7 +305,11 @@ const formData = ref<Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>>({
   youtubeLink: undefined,
   gameStatus: 'will-play',
   platform: undefined,
-  finishedYear: undefined
+  finishedYear: undefined,
+  order: undefined,
+  isDayOff: false,
+  dayOfWeek: undefined,
+  meals: undefined
 })
 
 onMounted(async () => {
@@ -223,7 +330,11 @@ onMounted(async () => {
           youtubeLink: item.youtubeLink,
           gameStatus: item.gameStatus || 'will-play',
           platform: item.platform,
-          finishedYear: item.finishedYear
+          finishedYear: item.finishedYear,
+          order: item.order,
+          isDayOff: item.isDayOff || false,
+          dayOfWeek: item.dayOfWeek,
+          meals: item.meals
         }
       }
     } catch (err: any) {
@@ -233,6 +344,29 @@ onMounted(async () => {
       } else {
         alert('Failed to load item: ' + (err?.message || 'Unknown error'))
       }
+    }
+  } else if (listType === 'diet' && route.query.dayOfWeek) {
+    formData.value.dayOfWeek = route.query.dayOfWeek as any
+    formData.value.title = `Meals for ${(route.query.dayOfWeek as string).charAt(0).toUpperCase() + (route.query.dayOfWeek as string).slice(1)}`
+    formData.value.meals = {
+      breakfast: undefined,
+      lunch: undefined,
+      dinner: undefined,
+      snacks: undefined
+    }
+  } else if (listType === 'fitness') {
+    const items = listsStore.getItems(listType)
+    const maxOrder = items.length > 0 
+      ? Math.max(...items.map(item => item.order ?? -1))
+      : -1
+    formData.value.order = maxOrder + 1
+    formData.value.title = `Exercise Day ${maxOrder + 2}`
+  } else if (listType === 'diet') {
+    formData.value.meals = {
+      breakfast: undefined,
+      lunch: undefined,
+      dinner: undefined,
+      snacks: undefined
     }
   }
 })

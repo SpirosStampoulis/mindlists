@@ -2,26 +2,47 @@
   <div
     class="bg-white rounded-lg shadow p-4 border-l-4 transition-all"
     :class="[
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && item.checked ? 'opacity-60' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && expiryStatus.color === 'red' ? 'border-red-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && expiryStatus.color === 'orange' ? 'border-orange-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && expiryStatus.color === 'yellow' ? 'border-yellow-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && expiryStatus.color === 'green' ? 'border-green-500' : ''
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && item.checked ? 'opacity-60' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'red' ? 'border-red-500' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'orange' ? 'border-orange-500' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'yellow' ? 'border-yellow-500' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'green' ? 'border-green-500' : '',
+      listType === 'fitness' ? 'border-orange-500' : '',
+      listType === 'diet' ? 'border-green-500' : ''
     ]"
   >
     <div class="flex items-start space-x-3">
-      <input
-        v-if="listType !== 'travel' && listType !== 'passcodes'"
-        type="checkbox"
-        :checked="item.checked"
-        @change="handleToggle"
-        class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-      />
-      <div class="flex-1 min-w-0">
+      <div
+        v-if="draggable"
+        class="flex flex-col gap-1 flex-shrink-0"
+        @click.stop
+      >
+        <button
+          @click="$emit('moveUp', dragIndex)"
+          :disabled="isFirst"
+          class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Move up"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+        <button
+          @click="$emit('moveDown', dragIndex)"
+          :disabled="isLast"
+          class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Move down"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 min-w-0" @click="$emit('click')">
         <div class="flex items-center justify-between">
           <h4
             class="text-lg font-medium text-gray-900"
-            :class="{ 'line-through': item.checked }"
+            :class="{ 'line-through': item.checked && listType !== 'games' }"
           >
             {{ item.title }}
           </h4>
@@ -32,7 +53,7 @@
             class="w-12 h-12 object-cover rounded"
           />
         </div>
-        <p v-if="listType !== 'travel' && item.description" class="text-sm text-gray-600 mt-1">
+        <p v-if="listType !== 'travel' && listType !== 'fitness' && item.description" class="text-sm text-gray-600 mt-1">
           {{ item.description }}
         </p>
         <div v-if="listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && item.expiryDate" class="mt-2 text-sm" :class="getExpiryColorClass()">
@@ -43,7 +64,7 @@
             €{{ item.priceHistory[0].price.toFixed(2) }}
           </span>
         </div>
-        <div v-if="listType === 'games' && item.youtubeLink" class="mt-2">
+        <div v-if="(listType === 'games' || listType === 'fitness') && item.youtubeLink" class="mt-2">
           <a
             :href="item.youtubeLink"
             target="_blank"
@@ -55,6 +76,41 @@
             </svg>
             Play on YouTube
           </a>
+        </div>
+        <div v-if="listType === 'fitness'" class="mt-2">
+          <span
+            :class="[
+              'px-2 py-1 text-xs rounded font-medium',
+              item.isDayOff
+                ? 'bg-gray-100 text-gray-800'
+                : 'bg-orange-100 text-orange-800'
+            ]"
+          >
+            {{ item.isDayOff ? 'Day Off' : 'Exercise Day' }}
+          </span>
+        </div>
+        <div v-if="listType === 'diet' && item.dayOfWeek" class="mt-2">
+          <span class="px-2 py-1 text-xs rounded font-medium bg-green-100 text-green-800 capitalize">
+            {{ item.dayOfWeek }}
+          </span>
+        </div>
+        <div v-if="listType === 'diet' && item.meals" class="mt-3 space-y-2">
+          <div v-if="item.meals.breakfast" class="text-sm">
+            <span class="font-medium text-gray-700">Breakfast:</span>
+            <span class="text-gray-600 ml-2">{{ item.meals.breakfast }}</span>
+          </div>
+          <div v-if="item.meals.lunch" class="text-sm">
+            <span class="font-medium text-gray-700">Lunch:</span>
+            <span class="text-gray-600 ml-2">{{ item.meals.lunch }}</span>
+          </div>
+          <div v-if="item.meals.dinner" class="text-sm">
+            <span class="font-medium text-gray-700">Dinner:</span>
+            <span class="text-gray-600 ml-2">{{ item.meals.dinner }}</span>
+          </div>
+          <div v-if="item.meals.snacks" class="text-sm">
+            <span class="font-medium text-gray-700">Snacks:</span>
+            <span class="text-gray-600 ml-2">{{ item.meals.snacks }}</span>
+          </div>
         </div>
         <div v-if="listType === 'games'" class="mt-2 flex flex-wrap gap-2">
           <span
@@ -90,20 +146,23 @@
 import { computed } from 'vue'
 import type { ListItem, ListType } from '@/types'
 import { formatExpiryDate, getExpiryStatus } from '@/utils/date'
-import { useItemsStore } from '@/stores/items'
 
 const props = defineProps<{
   item: ListItem
   listType: ListType
+  draggable?: boolean
+  dragIndex?: number
+  isFirst?: boolean
+  isLast?: boolean
 }>()
 
-const itemsStore = useItemsStore()
+const emit = defineEmits<{
+  moveUp: [index: number]
+  moveDown: [index: number]
+  click: []
+}>()
 
 const expiryStatus = computed(() => getExpiryStatus(props.item.expiryDate))
-
-const handleToggle = async () => {
-  await itemsStore.toggleChecked(props.listType, props.item.id, !props.item.checked)
-}
 
 const getExpiryColorClass = () => {
   const status = expiryStatus.value
@@ -112,5 +171,6 @@ const getExpiryColorClass = () => {
   if (status.color === 'yellow') return 'text-yellow-600'
   return 'text-green-600'
 }
+
 </script>
 

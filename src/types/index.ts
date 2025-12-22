@@ -5,7 +5,9 @@ export enum ListType {
   TRAVEL = 'travel',
   MEETINGS = 'meetings',
   REMINDERS = 'reminders',
-  GAMES = 'games'
+  GAMES = 'games',
+  FITNESS = 'fitness',
+  DIET = 'diet'
 }
 
 export interface ListTypeConfig {
@@ -57,6 +59,18 @@ export const LIST_TYPE_CONFIGS: Record<ListType, ListTypeConfig> = {
     name: 'Games',
     color: '#e91e63',
     icon: '🎮'
+  },
+  [ListType.FITNESS]: {
+    type: ListType.FITNESS,
+    name: 'Fitness',
+    color: '#ff5722',
+    icon: '💪'
+  },
+  [ListType.DIET]: {
+    type: ListType.DIET,
+    name: 'Diet',
+    color: '#4caf50',
+    icon: '🥗'
   }
 }
 
@@ -86,12 +100,22 @@ export interface ListItem {
   gameStatus?: 'played' | 'will-play'
   platform?: 'switch' | 'pc'
   finishedYear?: number
+  order?: number
+  isDayOff?: boolean
+  dayOfWeek?: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+  meals?: {
+    breakfast?: string
+    lunch?: string
+    dinner?: string
+    snacks?: string
+  }
   createdAt: string
   updatedAt: string
 }
 
 export interface SavedListItem extends Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'> {
   quantity?: number
+  order?: number
 }
 
 export interface SavedList {
