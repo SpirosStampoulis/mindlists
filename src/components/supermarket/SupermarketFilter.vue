@@ -21,7 +21,7 @@ import { computed } from 'vue'
 
 export type SupermarketFilterType = 'all' | 'pavi' | 'lidl' | 'spar'
 
-const props = defineProps<{
+defineProps<{
   modelValue: SupermarketFilterType
 }>()
 
