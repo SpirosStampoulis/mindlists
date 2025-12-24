@@ -56,7 +56,7 @@
     <SearchBar v-if="listType !== 'diet'" v-model="searchQuery" />
     
     <FilterButtons
-      v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'diet' && listType !== 'fitness' && listType !== 'batteries'"
+      v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'diet' && listType !== 'fitness' && listType !== 'batteries' && listType !== 'gift'"
       v-model="filter"
       :list-type="listType"
     />

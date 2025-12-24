@@ -80,20 +80,20 @@
         </div>
 
         <DatePicker
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && listType !== 'gift'"
           v-model="formData.expiryDate"
           label="Expiry Date"
         />
 
         <ReminderTimeDropdown
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && listType !== 'gift'"
           v-model="formData.notificationTime"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"
         />
 
         <NotificationConfig
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && formData.expiryDate"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && listType !== 'gift' && formData.expiryDate"
           v-model="formData.notificationPresets"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"

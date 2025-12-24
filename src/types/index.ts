@@ -8,7 +8,8 @@ export enum ListType {
   GAMES = 'games',
   FITNESS = 'fitness',
   DIET = 'diet',
-  BATTERIES = 'batteries'
+  BATTERIES = 'batteries',
+  GIFT = 'gift'
 }
 
 export interface ListTypeConfig {
@@ -78,6 +79,12 @@ export const LIST_TYPE_CONFIGS: Record<ListType, ListTypeConfig> = {
     name: 'Batteries',
     color: '#ffc107',
     icon: '🔋'
+  },
+  [ListType.GIFT]: {
+    type: ListType.GIFT,
+    name: 'Gift',
+    color: '#e91e63',
+    icon: '🎁'
   }
 }
 
