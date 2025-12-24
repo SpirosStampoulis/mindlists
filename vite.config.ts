@@ -8,7 +8,7 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'favicon.png'],
+      includeAssets: ['logo-icon.svg', 'logo-icon.png', 'favicon.svg', 'favicon.png'],
       manifest: {
         name: 'MindLists',
         short_name: 'MindLists',

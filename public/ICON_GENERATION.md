@@ -37,3 +37,5 @@ Make sure they are PNG format and match the exact dimensions.
 
 The PWA will work without these icons, but they are recommended for a better user experience when installing the app.
 
+
+

@@ -2,7 +2,9 @@
   <AppLayout :show-header="false">
     <div class="min-h-screen flex items-center justify-center bg-gray-50">
       <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 class="text-3xl font-bold text-center mb-8">MindLists</h1>
+        <div class="flex justify-center mb-8">
+          <Logo :show-text="true" size="lg" />
+        </div>
 
         <ErrorMessage :message="authStore.error" />
 
@@ -132,6 +134,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import ErrorMessage from '@/components/shared/ErrorMessage.vue'
+import Logo from '@/components/shared/Logo.vue'
 
 const authStore = useAuthStore()
 const email = ref('')
