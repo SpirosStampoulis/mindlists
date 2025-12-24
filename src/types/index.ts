@@ -7,7 +7,8 @@ export enum ListType {
   REMINDERS = 'reminders',
   GAMES = 'games',
   FITNESS = 'fitness',
-  DIET = 'diet'
+  DIET = 'diet',
+  BATTERIES = 'batteries'
 }
 
 export interface ListTypeConfig {
@@ -71,6 +72,12 @@ export const LIST_TYPE_CONFIGS: Record<ListType, ListTypeConfig> = {
     name: 'Diet',
     color: '#4caf50',
     icon: '🥗'
+  },
+  [ListType.BATTERIES]: {
+    type: ListType.BATTERIES,
+    name: 'Batteries',
+    color: '#ffc107',
+    icon: '🔋'
   }
 }
 
@@ -110,6 +117,8 @@ export interface ListItem {
     snacks?: string
   }
   supermarketCategory?: string
+  batteryType?: 'aa' | 'aaa'
+  batteryCount?: number
   createdAt: string
   updatedAt: string
 }

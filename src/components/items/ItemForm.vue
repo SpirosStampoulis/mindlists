@@ -21,7 +21,34 @@
           />
         </div>
 
-        <div v-if="listType !== 'travel' && listType !== 'fitness' && listType !== 'diet'">
+        <div v-if="listType === 'batteries'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Battery Type
+          </label>
+          <select
+            v-model="formData.batteryType"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option :value="undefined">Select Type</option>
+            <option value="aa">AA</option>
+            <option value="aaa">AAA</option>
+          </select>
+        </div>
+
+        <div v-if="listType === 'batteries'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            How Many
+          </label>
+          <input
+            v-model.number="formData.batteryCount"
+            type="number"
+            :min="1"
+            placeholder="e.g. 4"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div v-if="listType !== 'travel' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries'">
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
@@ -53,20 +80,20 @@
         </div>
 
         <DatePicker
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries'"
           v-model="formData.expiryDate"
           label="Expiry Date"
         />
 
         <ReminderTimeDropdown
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet'"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries'"
           v-model="formData.notificationTime"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"
         />
 
         <NotificationConfig
-          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && formData.expiryDate"
+          v-if="listType !== 'supermarket' && listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && formData.expiryDate"
           v-model="formData.notificationPresets"
           :expiry-date="formData.expiryDate"
           :item-title="formData.title"
@@ -316,7 +343,9 @@ const formData = ref<Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>>({
   isDayOff: false,
   dayOfWeek: undefined,
   meals: undefined,
-  supermarketCategory: undefined
+  supermarketCategory: undefined,
+  batteryType: undefined,
+  batteryCount: undefined
 })
 
 onMounted(async () => {
@@ -342,7 +371,9 @@ onMounted(async () => {
           isDayOff: item.isDayOff || false,
           dayOfWeek: item.dayOfWeek,
           meals: item.meals,
-          supermarketCategory: item.supermarketCategory
+          supermarketCategory: item.supermarketCategory,
+          batteryType: item.batteryType,
+          batteryCount: item.batteryCount
         }
       }
     } catch (err: any) {

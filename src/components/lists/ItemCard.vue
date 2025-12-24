@@ -2,13 +2,14 @@
   <div
     class="bg-white rounded-lg shadow p-4 border-l-4 transition-all"
     :class="[
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && item.checked ? 'opacity-60' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'red' ? 'border-red-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'orange' ? 'border-orange-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'yellow' ? 'border-yellow-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && expiryStatus.color === 'green' ? 'border-green-500' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && item.checked ? 'opacity-60' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'red' ? 'border-red-500' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'orange' ? 'border-orange-500' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'yellow' ? 'border-yellow-500' : '',
+      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'green' ? 'border-green-500' : '',
       listType === 'fitness' ? 'border-orange-500' : '',
-      listType === 'diet' ? 'border-green-500' : ''
+      listType === 'diet' ? 'border-green-500' : '',
+      listType === 'batteries' ? 'border-yellow-500' : ''
     ]"
   >
     <div class="flex items-start space-x-3">
@@ -53,10 +54,10 @@
             class="w-12 h-12 object-cover rounded"
           />
         </div>
-        <p v-if="listType !== 'travel' && listType !== 'fitness' && listType !== 'diet' && item.description" class="text-sm text-gray-600 mt-1">
+        <p v-if="listType !== 'travel' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && item.description" class="text-sm text-gray-600 mt-1">
           {{ item.description }}
         </p>
-        <div v-if="listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'diet' && item.expiryDate" class="mt-2 text-sm" :class="getExpiryColorClass()">
+        <div v-if="listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'diet' && listType !== 'batteries' && item.expiryDate" class="mt-2 text-sm" :class="getExpiryColorClass()">
           {{ formatExpiryDate(item.expiryDate) }}
         </div>
         <div v-if="listType !== 'travel' && listType !== 'passcodes' && item.priceHistory && item.priceHistory.length > 0" class="mt-2">
@@ -112,6 +113,20 @@
             <span class="font-medium text-gray-700">Snacks:</span>
             <span class="text-gray-600 ml-2">{{ item.meals.snacks }}</span>
           </div>
+        </div>
+        <div v-if="listType === 'batteries'" class="mt-2 flex flex-wrap gap-2">
+          <span
+            v-if="item.batteryType"
+            class="px-2 py-1 text-xs rounded font-medium bg-yellow-100 text-yellow-800 uppercase"
+          >
+            {{ item.batteryType }}
+          </span>
+          <span
+            v-if="item.batteryCount"
+            class="px-2 py-1 text-xs rounded font-medium bg-blue-100 text-blue-800"
+          >
+            {{ item.batteryCount }} {{ item.batteryCount === 1 ? 'battery' : 'batteries' }}
+          </span>
         </div>
         <div v-if="listType === 'games'" class="mt-2 flex flex-wrap gap-2">
           <span
