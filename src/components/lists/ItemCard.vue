@@ -64,6 +64,11 @@
             €{{ item.priceHistory[0].price.toFixed(2) }}
           </span>
         </div>
+        <div v-if="listType === 'supermarket' && item.supermarketCategory" class="mt-2">
+          <span class="px-2 py-1 text-xs rounded font-medium bg-green-100 text-green-800 capitalize">
+            {{ item.supermarketCategory }}
+          </span>
+        </div>
         <div v-if="(listType === 'games' || listType === 'fitness') && item.youtubeLink" class="mt-2">
           <a
             :href="item.youtubeLink"

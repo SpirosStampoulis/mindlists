@@ -82,10 +82,11 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold">All Items</h2>
         </div>
+        <SupermarketFilter v-model="supermarketFilter" />
         <LoadingSpinner v-if="loadingItems" />
         <ItemList
           v-else
-          :items="items"
+          :items="filteredItems"
           :list-type="ListType.SUPERMARKET"
         />
       </div>
@@ -115,7 +116,9 @@ import SavedListForm from '@/components/supermarket/SavedListForm.vue'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
 import ItemList from '@/components/lists/ItemList.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
+import SupermarketFilter from '@/components/supermarket/SupermarketFilter.vue'
 import { formatDate as formatDateUtil } from '@/utils/date'
+import { filterSupermarketItems } from '@/utils/sorting'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -132,6 +135,8 @@ const loadingItems = computed(() => listsStore.loading[ListType.SUPERMARKET] || 
 
 const currentItems = computed(() => listsStore.getItems(ListType.SUPERMARKET))
 const items = computed(() => listsStore.getItems(ListType.SUPERMARKET))
+const supermarketFilter = ref<'all' | 'pavi' | 'lidl' | 'spar'>('all')
+const filteredItems = computed(() => filterSupermarketItems(items.value, supermarketFilter.value))
 
 onMounted(async () => {
   await loadSavedLists()

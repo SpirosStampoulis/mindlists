@@ -109,6 +109,7 @@ export interface ListItem {
     dinner?: string
     snacks?: string
   }
+  supermarketCategory?: string
   createdAt: string
   updatedAt: string
 }

@@ -72,4 +72,11 @@ export const filterItems = (items: ListItem[], filter: FilterType, listType?: st
   }
 }
 
+export const filterSupermarketItems = (items: ListItem[], category: 'all' | 'pavi' | 'lidl' | 'spar'): ListItem[] => {
+  if (category === 'all') {
+    return items
+  }
+  return items.filter(item => item.supermarketCategory === category)
+}
+
 
