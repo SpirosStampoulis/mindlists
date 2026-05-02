@@ -69,7 +69,7 @@
             Store (chain)
           </label>
           <p class="text-xs text-gray-500 mb-2">
-            Choose a suggestion or type any store name. Used to filter items on the Saved Lists page.
+            Choose a suggestion or type any store name. Used to filter items on the Next list page.
           </p>
           <input
             v-model="supermarketInput"

@@ -1,4 +1,15 @@
-import { collection, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, Timestamp, serverTimestamp, enableNetwork } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  Timestamp,
+  serverTimestamp,
+  enableNetwork
+} from 'firebase/firestore'
 import { db } from '@/config/firebase'
 import type { ListItem, ListType } from '@/types'
 

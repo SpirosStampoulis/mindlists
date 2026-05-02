@@ -132,9 +132,14 @@ export interface ListItem {
   updatedAt: string
 }
 
+export type SavedListItemKind = 'catalog' | 'text'
+
 export interface SavedListItem extends Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'> {
   quantity?: number
   order?: number
+  /** catalog = supermarket snapshot; text = plain line on the list only */
+  listItemKind?: SavedListItemKind
+  textLineId?: string
 }
 
 export interface SavedList {

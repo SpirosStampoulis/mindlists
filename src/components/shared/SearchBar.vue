@@ -4,7 +4,7 @@
       type="text"
       :value="modelValue"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-      placeholder="Search items..."
+      :placeholder="placeholder"
       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
     <div class="absolute left-3 top-2.5 text-gray-400">
@@ -14,9 +14,13 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  modelValue: string
-}>()
+withDefaults(
+  defineProps<{
+    modelValue: string
+    placeholder?: string
+  }>(),
+  { placeholder: 'Search items...' }
+)
 
 defineEmits<{
   'update:modelValue': [value: string]

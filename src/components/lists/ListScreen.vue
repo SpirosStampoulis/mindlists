@@ -19,7 +19,7 @@
             @click="showSavedLists = true"
             class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
           >
-            📋 Saved Lists
+            📋 Next list
           </button>
           <button
             @click="$router.push(`/item/${listType}`)"
@@ -35,7 +35,7 @@
           @click="showSavedLists = true"
           class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
-          📋 Saved Lists
+          📋 Next list
         </button>
         <button
           @click="$router.push(`/item/${listType}`)"
@@ -136,18 +136,31 @@ onUnmounted(() => {
 
 const handleLoadSavedList = async (itemsToLoad: SavedListItem[]) => {
   try {
-    const currentItemTitles = new Set(items.value.map(item => item.title.toLowerCase()))
-    
+    const currentItemTitles = new Set(items.value.map((i) => i.title.toLowerCase()))
+
     for (const item of itemsToLoad) {
       const itemTitleLower = item.title.toLowerCase()
-      if (!currentItemTitles.has(itemTitleLower)) {
-        const { quantity, ...itemToCreate } = item
+      if (currentItemTitles.has(itemTitleLower)) continue
+
+      const { listItemKind, textLineId, quantity: _qty, ...rest } = item
+      if (item.listItemKind === 'text') {
         await itemsStore.create(listType, {
-          ...itemToCreate,
+          title: item.title.trim(),
+          description: rest.description ?? '',
+          tags: rest.tags ?? [],
+          checked: false,
+          notificationPresets: rest.notificationPresets ?? [],
+          priceHistory: rest.priceHistory ?? []
+        })
+      } else {
+        await itemsStore.create(listType, {
+          ...rest,
           checked: false
         })
       }
+      currentItemTitles.add(itemTitleLower)
     }
+
     showSavedLists.value = false
   } catch (err: any) {
     console.error('Failed to load saved list:', err)

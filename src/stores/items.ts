@@ -7,6 +7,7 @@ import type { ListItem, PriceEntry } from '@/types'
 import { ListType } from '@/types'
 import type { ReceiptRow } from '@/types/receipt'
 import { normalizeTitle } from '@/utils/receiptMatcher'
+import { mergeTwoListItems, listItemToUpdatePayload } from '@/utils/mergeListItems'
 
 export const useItemsStore = defineStore('items', () => {
   const loading = ref(false)
@@ -389,6 +390,29 @@ export const useItemsStore = defineStore('items', () => {
     return summary
   }
 
+  /** Merges `otherId` into `keeperId`, then deletes `otherId`. Data from both rows is combined (see mergeListItems). */
+  const mergeTwoSupermarketItems = async (keeperId: string, otherId: string): Promise<void> => {
+    const authStore = useAuthStore()
+    const userId = authStore.userId
+    if (!userId) {
+      throw new Error('User not authenticated')
+    }
+    if (keeperId === otherId) {
+      throw new Error('Choose two different items.')
+    }
+
+    const fs = useFirestore()
+    const keeper = await fs.getItem(userId, ListType.SUPERMARKET, keeperId)
+    const other = await fs.getItem(userId, ListType.SUPERMARKET, otherId)
+    if (!keeper || !other) {
+      throw new Error('One or both items could not be found.')
+    }
+
+    const merged = mergeTwoListItems(keeper, other)
+    await updateItem(userId, ListType.SUPERMARKET, keeperId, listItemToUpdatePayload(merged))
+    await deleteItem(userId, ListType.SUPERMARKET, otherId)
+  }
+
   return {
     loading,
     error,
@@ -398,7 +422,8 @@ export const useItemsStore = defineStore('items', () => {
     toggleChecked,
     addPriceEntry,
     removePriceEntry,
-    bulkUpsertFromReceipt
+    bulkUpsertFromReceipt,
+    mergeTwoSupermarketItems
   }
 })
 

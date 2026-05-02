@@ -19,7 +19,36 @@ function listItemToSavedItem(item: ListItem, order: number, quantity?: number): 
   const cleaned: SavedListItem = { ...rest } as SavedListItem
   if (quantity !== undefined && quantity >= 1) cleaned.quantity = quantity
   cleaned.order = order
+  cleaned.listItemKind = 'catalog'
   return cleaned
+}
+
+function savedItemDedupeKey(it: SavedListItem): string {
+  if (it.listItemKind === 'text' && it.textLineId) return `t:${it.textLineId}`
+  return `c:${normTitle(it.title)}`
+}
+
+/** Append imported catalog rows to existing next-list items; skip duplicate catalog titles (case-insensitive). */
+export function mergeImportedListsIntoExisting(
+  existing: SavedListItem[],
+  lists: Omit<SavedList, 'id' | 'createdAt' | 'updatedAt'>[]
+): SavedListItem[] {
+  const seen = new Set(existing.map(savedItemDedupeKey))
+  const out: SavedListItem[] = existing.map((e, i) => ({ ...e, order: i }))
+  let order = out.length
+  for (const list of lists) {
+    for (const it of list.items) {
+      if (it.listItemKind === 'text') {
+        out.push({ ...it, order: order++ })
+        continue
+      }
+      const k = savedItemDedupeKey(it)
+      if (seen.has(k)) continue
+      seen.add(k)
+      out.push({ ...it, listItemKind: 'catalog', order: order++ })
+    }
+  }
+  return out
 }
 
 function parseDate(value: unknown): string | undefined {
