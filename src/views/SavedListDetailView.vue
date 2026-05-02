@@ -2,7 +2,7 @@
   <AppLayout>
     <div>
       <div class="mb-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div class="flex items-center space-x-4">
             <button
               @click="$router.push('/list/supermarket/saved')"
@@ -14,6 +14,12 @@
               🛒 {{ savedList?.name || 'Loading...' }}
             </h1>
           </div>
+          <button
+            @click="showImportReceipt = true"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            📥 Import Receipt
+          </button>
         </div>
       </div>
 
@@ -113,26 +119,39 @@
       <div v-else class="text-center py-12 text-gray-500">
         Saved list not found
       </div>
+
+      <ReceiptImportDialog
+        v-if="showImportReceipt"
+        :existing-items="supermarketItems"
+        @done="showImportReceipt = false"
+        @cancel="showImportReceipt = false"
+      />
     </div>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import type { SavedList } from '@/types'
+import { ListType } from '@/types'
 import { useSavedLists } from '@/composables/useSavedLists'
 import { useAuthStore } from '@/stores/auth'
+import { useListsStore } from '@/stores/lists'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
+import ReceiptImportDialog from '@/components/supermarket/ReceiptImportDialog.vue'
 import { formatDate as formatDateUtil } from '@/utils/date'
 
 const route = useRoute()
 const authStore = useAuthStore()
+const listsStore = useListsStore()
 const { getSavedList, updateSavedList } = useSavedLists()
 
 const savedList = ref<SavedList | null>(null)
 const loading = ref(true)
+const showImportReceipt = ref(false)
+const supermarketItems = computed(() => listsStore.getItems(ListType.SUPERMARKET))
 
 const sortedItems = computed(() => {
   if (!savedList.value) return []
@@ -154,6 +173,11 @@ const sortedItems = computed(() => {
 
 onMounted(async () => {
   await loadSavedList()
+  listsStore.subscribeToList(ListType.SUPERMARKET)
+})
+
+onUnmounted(() => {
+  listsStore.unsubscribeAll()
 })
 
 const loadSavedList = async () => {

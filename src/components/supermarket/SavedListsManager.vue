@@ -1,14 +1,33 @@
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
       <h2 class="text-2xl font-bold">Saved Lists</h2>
-      <button
-        @click="showCreateForm = true"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-      >
-        + Create New List
-      </button>
+      <div class="flex flex-wrap gap-2">
+        <input
+          ref="importInputRef"
+          type="file"
+          accept=".json,application/json"
+          class="hidden"
+          @change="onImportJson"
+        />
+        <button
+          type="button"
+          @click="importInputRef?.click()"
+          class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800"
+        >
+          Import JSON
+        </button>
+        <button
+          @click="showCreateForm = true"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          + Create New List
+        </button>
+      </div>
     </div>
+    <p v-if="importFeedback" class="text-sm mb-4" :class="importFeedbackIsError ? 'text-red-600' : 'text-green-700'">
+      {{ importFeedback }}
+    </p>
 
     <SavedListForm
       v-if="showCreateForm || editingList"
@@ -79,6 +98,7 @@ import { useSavedLists } from '@/composables/useSavedLists'
 import { useAuthStore } from '@/stores/auth'
 import SavedListForm from './SavedListForm.vue'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
+import { importSavedListsFromJson, readJsonFile } from '@/utils/savedListImport'
 
 defineProps<{
   currentItems: ListItem[]
@@ -94,6 +114,9 @@ const editingList = ref<SavedList | undefined>(undefined)
 const showDeleteConfirm = ref(false)
 const deletingListId = ref<string | null>(null)
 const loading = ref(false)
+const importInputRef = ref<HTMLInputElement | null>(null)
+const importFeedback = ref<string | null>(null)
+const importFeedbackIsError = ref(false)
 
 onMounted(async () => {
   await loadSavedLists()
@@ -106,6 +129,37 @@ const loadSavedLists = async () => {
     savedLists.value = await getSavedLists(authStore.userId)
   } catch (err) {
     console.error('Failed to load saved lists:', err)
+  }
+}
+
+const onImportJson = async (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file || !authStore.userId) return
+
+  importFeedback.value = null
+  importFeedbackIsError.value = false
+
+  try {
+    const json = await readJsonFile(file)
+    const result = importSavedListsFromJson(json, props.currentItems)
+    if (!result.ok) {
+      importFeedback.value = result.error
+      importFeedbackIsError.value = true
+      return
+    }
+    for (const list of result.lists) {
+      await createSavedList(authStore.userId, list)
+    }
+    await loadSavedLists()
+    const skipMsg = result.skippedTitles.length
+      ? ` Skipped (no matching item): ${result.skippedTitles.join(', ')}.`
+      : ''
+    importFeedback.value = `Imported ${result.lists.length} list(s).${skipMsg}`
+  } catch (err) {
+    importFeedback.value = (err as Error).message || 'Import failed.'
+    importFeedbackIsError.value = true
   }
 }
 

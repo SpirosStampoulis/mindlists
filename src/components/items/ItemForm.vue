@@ -66,17 +66,50 @@
 
         <div v-if="listType === 'supermarket'">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Supermarket
+            Store (chain)
           </label>
-          <select
-            v-model="formData.supermarketCategory"
+          <p class="text-xs text-gray-500 mb-2">
+            Choose a suggestion or type any store name. Used to filter items on the Saved Lists page.
+          </p>
+          <input
+            v-model="supermarketInput"
+            type="text"
+            list="supermarket-store-presets"
+            autocomplete="off"
+            placeholder="e.g. lidl, coop, or any name"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <datalist id="supermarket-store-presets">
+            <option v-for="id in supermarketPresetIds" :key="id" :value="id" />
+          </datalist>
+        </div>
+
+        <div v-if="listType === 'supermarket'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Product type
+          </label>
+          <p class="text-xs text-gray-500 mb-2">
+            Shown on cards and filters. Pick a category from the list, or use the optional field below for your own type.
+          </p>
+          <select
+            v-model="grocerySelectModel"
+            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
           >
-            <option :value="undefined">Select Supermarket</option>
-            <option value="pavi">Pavi</option>
-            <option value="lidl">Lidl</option>
-            <option value="spar">Spar</option>
+            <option value="">No category</option>
+            <option v-for="o in grocerySelectRows" :key="o.value" :value="o.value">
+              {{ o.label }}
+            </option>
           </select>
+          <p class="text-xs text-gray-500 mt-2">Custom type (optional)</p>
+          <input
+            v-model="groceryCustomDraft"
+            type="text"
+            autocomplete="off"
+            placeholder="Type a short code, then Tab or Enter"
+            class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            @keydown.enter.prevent="applyGroceryCustom"
+            @blur="applyGroceryCustom"
+          />
         </div>
 
         <DatePicker
@@ -311,6 +344,8 @@ import NotificationConfig from './NotificationConfig.vue'
 import PriceHistory from './PriceHistory.vue'
 import PhotoUpload from './PhotoUpload.vue'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
+import { normalizeStoreId, presetIdsForDatalist } from '@/utils/supermarketStores'
+import { groceryDropdownRows, normalizeGroceryId } from '@/utils/groceryCategories'
 
 const route = useRoute()
 const router = useRouter()
@@ -344,9 +379,39 @@ const formData = ref<Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>>({
   dayOfWeek: undefined,
   meals: undefined,
   supermarketCategory: undefined,
+  groceryCategory: undefined,
   batteryType: undefined,
   batteryCount: undefined
 })
+
+const supermarketPresetIds = presetIdsForDatalist()
+
+const supermarketInput = computed({
+  get: () => formData.value.supermarketCategory ?? '',
+  set: (v: string) => {
+    formData.value.supermarketCategory = normalizeStoreId(v)
+  }
+})
+
+const groceryCustomDraft = ref('')
+
+const grocerySelectRows = computed(() => groceryDropdownRows(formData.value.groceryCategory))
+
+const grocerySelectModel = computed({
+  get: () => formData.value.groceryCategory ?? '',
+  set: (v: string) => {
+    formData.value.groceryCategory = normalizeGroceryId(v) || undefined
+    groceryCustomDraft.value = ''
+  }
+})
+
+const applyGroceryCustom = () => {
+  const next = normalizeGroceryId(groceryCustomDraft.value)
+  if (next) {
+    formData.value.groceryCategory = next
+    groceryCustomDraft.value = ''
+  }
+}
 
 onMounted(async () => {
   if (isEditing.value && itemId && authStore.userId) {
@@ -371,7 +436,8 @@ onMounted(async () => {
           isDayOff: item.isDayOff || false,
           dayOfWeek: item.dayOfWeek,
           meals: item.meals,
-          supermarketCategory: item.supermarketCategory,
+          supermarketCategory: normalizeStoreId(item.supermarketCategory),
+          groceryCategory: normalizeGroceryId(item.groceryCategory),
           batteryType: item.batteryType,
           batteryCount: item.batteryCount
         }

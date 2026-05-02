@@ -72,11 +72,44 @@ export const filterItems = (items: ListItem[], filter: FilterType, listType?: st
   }
 }
 
-export const filterSupermarketItems = (items: ListItem[], category: 'all' | 'pavi' | 'lidl' | 'spar'): ListItem[] => {
+export const SUPERMARKET_FILTER_UNCATEGORIZED = '__uncategorized__' as const
+
+export type SupermarketFilterCategory = 'all' | typeof SUPERMARKET_FILTER_UNCATEGORIZED | string
+
+export const filterSupermarketItems = (
+  items: ListItem[],
+  category: SupermarketFilterCategory
+): ListItem[] => {
   if (category === 'all') {
     return items
   }
-  return items.filter(item => item.supermarketCategory === category)
+  if (category === SUPERMARKET_FILTER_UNCATEGORIZED) {
+    return items.filter((item) => !item.supermarketCategory?.trim())
+  }
+  const want = category.trim().toLowerCase()
+  return items.filter(
+    (item) => (item.supermarketCategory || '').trim().toLowerCase() === want
+  )
+}
+
+export const GROCERY_FILTER_UNCATEGORIZED = '__grocery_uncategorized__' as const
+
+export type GroceryFilterCategory = 'all' | typeof GROCERY_FILTER_UNCATEGORIZED | string
+
+export const filterGroceryCategoryItems = (
+  items: ListItem[],
+  category: GroceryFilterCategory
+): ListItem[] => {
+  if (category === 'all') {
+    return items
+  }
+  if (category === GROCERY_FILTER_UNCATEGORIZED) {
+    return items.filter((item) => !item.groceryCategory?.trim())
+  }
+  const want = category.trim().toLowerCase()
+  return items.filter(
+    (item) => (item.groceryCategory || '').trim().toLowerCase() === want
+  )
 }
 
 

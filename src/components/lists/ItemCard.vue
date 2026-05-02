@@ -1,18 +1,58 @@
 <template>
   <div
-    class="bg-white rounded-lg shadow p-4 border-l-4 transition-all"
-    :class="[
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && item.checked ? 'opacity-60' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'red' ? 'border-red-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'orange' ? 'border-orange-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'yellow' ? 'border-yellow-500' : '',
-      listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'fitness' && listType !== 'diet' && listType !== 'batteries' && expiryStatus.color === 'green' ? 'border-green-500' : '',
-      listType === 'fitness' ? 'border-orange-500' : '',
-      listType === 'diet' ? 'border-green-500' : '',
-      listType === 'batteries' ? 'border-yellow-500' : ''
-    ]"
+    :class="cardRootClass"
   >
-    <div class="flex items-start space-x-3">
+    <!-- Supermarket: dense row, mobile-first -->
+    <div
+      v-if="listType === 'supermarket'"
+      class="flex items-stretch gap-2 min-h-0 cursor-pointer active:bg-gray-50 rounded-md -m-0.5 p-0.5 sm:p-0"
+      @click="$emit('click')"
+    >
+      <img
+        v-if="item.photoUrl && !item.photoUrl.startsWith('blob:')"
+        :src="item.photoUrl"
+        alt=""
+        class="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded object-cover self-center border border-gray-100"
+      />
+      <div class="min-w-0 flex-1 flex flex-col justify-center gap-0.5 py-0.5">
+        <div class="flex items-start justify-between gap-2 min-w-0">
+          <h4
+            class="text-sm sm:text-[15px] font-medium text-gray-900 leading-snug min-w-0 flex-1 line-clamp-2"
+            :class="{ 'line-through text-gray-500': item.checked }"
+          >
+            {{ item.title }}
+          </h4>
+          <span
+            v-if="latestPrice !== null"
+            class="shrink-0 text-sm font-semibold tabular-nums text-gray-900 pt-0.5"
+          >
+            €{{ latestPrice.toFixed(2) }}
+          </span>
+        </div>
+        <div class="grid grid-cols-2 gap-1 w-full min-w-0 sm:flex sm:flex-wrap sm:gap-1.5">
+          <span
+            class="min-w-0 truncate text-center sm:text-left px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium leading-tight"
+            :class="storeChipClass(item.supermarketCategory)"
+          >
+            {{ storeLabel(item.supermarketCategory) }}
+          </span>
+          <span
+            class="min-w-0 truncate text-center sm:text-left px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium leading-tight"
+            :class="groceryChipClass(item.groceryCategory)"
+          >
+            {{ groceryLabel(item.groceryCategory) }}
+          </span>
+        </div>
+        <p
+          v-if="item.description"
+          class="text-[11px] sm:text-xs text-gray-500 line-clamp-1 leading-tight"
+        >
+          {{ item.description }}
+        </p>
+      </div>
+    </div>
+
+    <div v-else class="flex items-start space-x-3">
       <div
         v-if="draggable"
         class="flex flex-col gap-1 flex-shrink-0"
@@ -60,14 +100,9 @@
         <div v-if="listType !== 'travel' && listType !== 'passcodes' && listType !== 'games' && listType !== 'diet' && listType !== 'batteries' && item.expiryDate" class="mt-2 text-sm" :class="getExpiryColorClass()">
           {{ formatExpiryDate(item.expiryDate) }}
         </div>
-        <div v-if="listType !== 'travel' && listType !== 'passcodes' && item.priceHistory && item.priceHistory.length > 0" class="mt-2">
+        <div v-if="listType !== 'travel' && listType !== 'passcodes' && latestPrice !== null" class="mt-2">
           <span class="text-sm font-semibold text-gray-900">
-            €{{ item.priceHistory[0].price.toFixed(2) }}
-          </span>
-        </div>
-        <div v-if="listType === 'supermarket' && item.supermarketCategory" class="mt-2">
-          <span class="px-2 py-1 text-xs rounded font-medium bg-green-100 text-green-800 capitalize">
-            {{ item.supermarketCategory }}
+            €{{ latestPrice.toFixed(2) }}
           </span>
         </div>
         <div v-if="(listType === 'games' || listType === 'fitness') && item.youtubeLink" class="mt-2">
@@ -162,6 +197,8 @@
 import { computed } from 'vue'
 import type { ListItem, ListType } from '@/types'
 import { formatExpiryDate, getExpiryStatus } from '@/utils/date'
+import { storeChipClass, storeLabel } from '@/utils/supermarketStores'
+import { groceryChipClass, groceryLabel } from '@/utils/groceryCategories'
 
 const props = defineProps<{
   item: ListItem
@@ -179,6 +216,56 @@ const emit = defineEmits<{
 }>()
 
 const expiryStatus = computed(() => getExpiryStatus(props.item.expiryDate))
+
+const toTs = (d: string | undefined) => (d ? new Date(d).getTime() : 0)
+
+const latestPrice = computed((): number | null => {
+  const h = props.item.priceHistory
+  if (!h?.length) return null
+  const sorted = [...h].sort(
+    (a, b) => toTs(b.date || b.createdAt) - toTs(a.date || a.createdAt)
+  )
+  const p = sorted[0]?.price
+  const n = typeof p === 'string' ? parseFloat(p) : p
+  return isFinite(n as number) ? (n as number) : null
+})
+
+const cardRootClass = computed(() => {
+  if (props.listType === 'supermarket') {
+    return [
+      'rounded-lg border border-gray-200 bg-white shadow-sm transition-colors p-2 sm:p-2.5',
+      props.item.checked ? 'opacity-60' : 'hover:border-green-400/80 hover:shadow'
+    ]
+      .filter(Boolean)
+      .join(' ')
+  }
+  const t = props.listType
+  const i = props.item
+  const e = expiryStatus.value
+  return [
+    'bg-white rounded-lg shadow p-4 border-l-4 transition-all',
+    t !== 'travel' && t !== 'passcodes' && t !== 'games' && t !== 'fitness' && t !== 'diet' && t !== 'batteries' && i.checked
+      ? 'opacity-60'
+      : '',
+    t !== 'travel' && t !== 'passcodes' && t !== 'games' && t !== 'fitness' && t !== 'diet' && t !== 'batteries' && e.color === 'red'
+      ? 'border-red-500'
+      : '',
+    t !== 'travel' && t !== 'passcodes' && t !== 'games' && t !== 'fitness' && t !== 'diet' && t !== 'batteries' && e.color === 'orange'
+      ? 'border-orange-500'
+      : '',
+    t !== 'travel' && t !== 'passcodes' && t !== 'games' && t !== 'fitness' && t !== 'diet' && t !== 'batteries' && e.color === 'yellow'
+      ? 'border-yellow-500'
+      : '',
+    t !== 'travel' && t !== 'passcodes' && t !== 'games' && t !== 'fitness' && t !== 'diet' && t !== 'batteries' && e.color === 'green'
+      ? 'border-green-500'
+      : '',
+    t === 'fitness' ? 'border-orange-500' : '',
+    t === 'diet' ? 'border-green-500' : '',
+    t === 'batteries' ? 'border-yellow-500' : ''
+  ]
+    .filter(Boolean)
+    .join(' ')
+})
 
 const getExpiryColorClass = () => {
   const status = expiryStatus.value

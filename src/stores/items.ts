@@ -3,7 +3,10 @@ import { ref } from 'vue'
 import { useFirestore } from '@/composables/useFirestore'
 import { useFirebaseStorage } from '@/composables/useFirebaseStorage'
 import { useAuthStore } from './auth'
-import type { ListItem, ListType, PriceEntry } from '@/types'
+import type { ListItem, PriceEntry } from '@/types'
+import { ListType } from '@/types'
+import type { ReceiptRow } from '@/types/receipt'
+import { normalizeTitle } from '@/utils/receiptMatcher'
 
 export const useItemsStore = defineStore('items', () => {
   const loading = ref(false)
@@ -310,6 +313,82 @@ export const useItemsStore = defineStore('items', () => {
     }
   }
 
+  const bulkUpsertFromReceipt = async (
+    rows: ReceiptRow[],
+    meta: { date: string; supermarketCategory?: string }
+  ): Promise<{
+    created: number
+    updated: number
+    skipped: number
+    failed: { title: string; error: string }[]
+  }> => {
+    const authStore = useAuthStore()
+    const userId = authStore.userId
+    if (!userId) {
+      throw new Error('User not authenticated')
+    }
+
+    const summary = {
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      failed: [] as { title: string; error: string }[]
+    }
+
+    const createdInBatch = new Map<string, string>()
+
+    for (const row of rows) {
+      if (!row.include) {
+        summary.skipped += 1
+        continue
+      }
+      const key = normalizeTitle(row.title)
+      const targetId = row.existingItem?.id ?? createdInBatch.get(key)
+
+      try {
+        if (targetId) {
+          await addPriceEntry(ListType.SUPERMARKET, targetId, row.unitPrice, meta.date)
+          if (row.groceryCategory) {
+            const latest = await useFirestore().getItem(userId, ListType.SUPERMARKET, targetId)
+            if (latest && !latest.groceryCategory?.trim()) {
+              await updateItem(userId, ListType.SUPERMARKET, targetId, {
+                groceryCategory: row.groceryCategory
+              })
+            }
+          }
+          summary.updated += 1
+        } else {
+          const newId = await create(ListType.SUPERMARKET, {
+            title: row.title,
+            description: '',
+            tags: [],
+            checked: false,
+            notificationPresets: [],
+            priceHistory: [
+              {
+                id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
+                price: row.unitPrice,
+                date: meta.date,
+                createdAt: new Date().toISOString()
+              }
+            ],
+            supermarketCategory: meta.supermarketCategory,
+            groceryCategory: row.groceryCategory
+          } as Omit<ListItem, 'id' | 'createdAt' | 'updatedAt'>)
+          createdInBatch.set(key, newId)
+          summary.created += 1
+        }
+      } catch (err: any) {
+        summary.failed.push({
+          title: row.title,
+          error: err?.message || 'Unknown error'
+        })
+      }
+    }
+
+    return summary
+  }
+
   return {
     loading,
     error,
@@ -318,7 +397,8 @@ export const useItemsStore = defineStore('items', () => {
     remove,
     toggleChecked,
     addPriceEntry,
-    removePriceEntry
+    removePriceEntry,
+    bulkUpsertFromReceipt
   }
 })
 

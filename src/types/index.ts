@@ -124,6 +124,8 @@ export interface ListItem {
     snacks?: string
   }
   supermarketCategory?: string
+  /** Product aisle: meat, produce, beverages, etc. (see groceryCategories). */
+  groceryCategory?: string
   batteryType?: 'aa' | 'aaa'
   batteryCount?: number
   createdAt: string

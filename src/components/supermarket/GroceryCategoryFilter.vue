@@ -1,7 +1,8 @@
 <template>
   <div class="mb-4">
     <p class="text-sm text-gray-600 mb-2">
-      Filter by store. <span class="text-gray-500">“No store”</span> lists items without a chain set — edit an item to assign one.
+      Filter by product type (meat, drinks, produce, etc.).
+      <span class="text-gray-500">“No category”</span> is for items not classified yet — edit the item or adjust them on receipt import.
     </p>
     <div class="flex flex-wrap gap-2">
       <button
@@ -12,7 +13,7 @@
         :class="[
           'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
           modelValue === opt.value
-            ? 'bg-green-600 text-white shadow-sm'
+            ? 'bg-emerald-700 text-white shadow-sm'
             : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
         ]"
       >
@@ -33,8 +34,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { ListItem } from '@/types'
-import { SUPERMARKET_FILTER_UNCATEGORIZED } from '@/utils/sorting'
-import { SUPERMARKET_PRESETS, storeLabel } from '@/utils/supermarketStores'
+import { GROCERY_FILTER_UNCATEGORIZED } from '@/utils/sorting'
+import { GROCERY_PRESETS, groceryLabel } from '@/utils/groceryCategories'
 
 const props = defineProps<{
   modelValue: string
@@ -45,27 +46,27 @@ defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const presetOrder = SUPERMARKET_PRESETS.map((p) => p.id)
+const presetOrder = GROCERY_PRESETS.map((p) => p.id)
 
 const filterOptions = computed(() => {
-  const items = props.items || []
-  const allCount = items.length
+  const list = props.items || []
+  const allCount = list.length
   const opts: { value: string; label: string; count: number }[] = [
-    { value: 'all', label: 'All', count: allCount }
+    { value: 'all', label: 'All types', count: allCount }
   ]
 
-  const uncategorized = items.filter((i) => !i.supermarketCategory?.trim()).length
+  const uncategorized = list.filter((i) => !i.groceryCategory?.trim()).length
   if (uncategorized > 0) {
     opts.push({
-      value: SUPERMARKET_FILTER_UNCATEGORIZED,
-      label: 'No store',
+      value: GROCERY_FILTER_UNCATEGORIZED,
+      label: 'No category',
       count: uncategorized
     })
   }
 
   const counts = new Map<string, number>()
-  for (const it of items) {
-    const raw = it.supermarketCategory?.trim()
+  for (const it of list) {
+    const raw = it.groceryCategory?.trim()
     if (!raw) continue
     const key = raw.toLowerCase()
     counts.set(key, (counts.get(key) || 0) + 1)
@@ -77,13 +78,13 @@ const filterOptions = computed(() => {
     if (ia !== -1 && ib !== -1) return ia - ib
     if (ia !== -1) return -1
     if (ib !== -1) return 1
-    return storeLabel(a).localeCompare(storeLabel(b), undefined, { sensitivity: 'base' })
+    return groceryLabel(a).localeCompare(groceryLabel(b), undefined, { sensitivity: 'base' })
   })
 
   for (const id of keys) {
     opts.push({
       value: id,
-      label: storeLabel(id),
+      label: groceryLabel(id),
       count: counts.get(id) || 0
     })
   }

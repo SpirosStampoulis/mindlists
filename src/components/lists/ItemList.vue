@@ -1,5 +1,11 @@
 <template>
-  <div class="space-y-4">
+  <div
+    :class="
+      listType === 'supermarket'
+        ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3'
+        : 'space-y-4'
+    "
+  >
     <ItemCard
       v-for="(item, index) in sortedItems"
       :key="item.id"
@@ -14,7 +20,11 @@
       @move-down="handleMoveDown"
       class="cursor-pointer"
     />
-    <div v-if="sortedItems.length === 0" class="text-center py-12 text-gray-500">
+    <div
+      v-if="sortedItems.length === 0"
+      class="text-center py-12 text-gray-500"
+      :class="listType === 'supermarket' ? 'col-span-full' : ''"
+    >
       No items found
     </div>
   </div>

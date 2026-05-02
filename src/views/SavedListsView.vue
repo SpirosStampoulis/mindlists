@@ -27,6 +27,12 @@
             >
               + Create New List
             </button>
+            <button
+              @click="showImportReceipt = true"
+              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              📥 Import Receipt
+            </button>
           </div>
         </div>
       </div>
@@ -82,7 +88,8 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold">All Items</h2>
         </div>
-        <SupermarketFilter v-model="supermarketFilter" />
+        <SupermarketFilter v-model="supermarketFilter" :items="items" />
+        <GroceryCategoryFilter v-model="groceryFilter" :items="items" />
         <LoadingSpinner v-if="loadingItems" />
         <ItemList
           v-else
@@ -99,12 +106,19 @@
         @confirm="confirmDelete"
         @cancel="showDeleteConfirm = false"
       />
+
+      <ReceiptImportDialog
+        v-if="showImportReceipt"
+        :existing-items="currentItems"
+        @done="showImportReceipt = false"
+        @cancel="showImportReceipt = false"
+      />
     </div>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { SavedList } from '@/types'
 import { ListType } from '@/types'
@@ -117,8 +131,15 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
 import ItemList from '@/components/lists/ItemList.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import SupermarketFilter from '@/components/supermarket/SupermarketFilter.vue'
+import GroceryCategoryFilter from '@/components/supermarket/GroceryCategoryFilter.vue'
+import ReceiptImportDialog from '@/components/supermarket/ReceiptImportDialog.vue'
 import { formatDate as formatDateUtil } from '@/utils/date'
-import { filterSupermarketItems } from '@/utils/sorting'
+import {
+  filterSupermarketItems,
+  filterGroceryCategoryItems,
+  SUPERMARKET_FILTER_UNCATEGORIZED,
+  GROCERY_FILTER_UNCATEGORIZED
+} from '@/utils/sorting'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -129,14 +150,49 @@ const savedLists = ref<SavedList[]>([])
 const showCreateForm = ref(false)
 const editingList = ref<SavedList | undefined>(undefined)
 const showDeleteConfirm = ref(false)
+const showImportReceipt = ref(false)
 const deletingListId = ref<string | null>(null)
 const loading = ref(false)
 const loadingItems = computed(() => listsStore.loading[ListType.SUPERMARKET] || false)
 
 const currentItems = computed(() => listsStore.getItems(ListType.SUPERMARKET))
 const items = computed(() => listsStore.getItems(ListType.SUPERMARKET))
-const supermarketFilter = ref<'all' | 'pavi' | 'lidl' | 'spar'>('all')
-const filteredItems = computed(() => filterSupermarketItems(items.value, supermarketFilter.value))
+const supermarketFilter = ref<string>('all')
+const groceryFilter = ref<string>('all')
+const filteredItems = computed(() => {
+  const byStore = filterSupermarketItems(items.value, supermarketFilter.value)
+  return filterGroceryCategoryItems(byStore, groceryFilter.value)
+})
+
+watch([items, supermarketFilter], () => {
+  const f = supermarketFilter.value
+  if (f === 'all') return
+  if (f === SUPERMARKET_FILTER_UNCATEGORIZED) {
+    if (!items.value.some((i) => !i.supermarketCategory?.trim())) {
+      supermarketFilter.value = 'all'
+    }
+    return
+  }
+  const want = f.trim().toLowerCase()
+  const has = items.value.some(
+    (i) => (i.supermarketCategory || '').trim().toLowerCase() === want
+  )
+  if (!has) supermarketFilter.value = 'all'
+})
+
+watch([items, groceryFilter], () => {
+  const f = groceryFilter.value
+  if (f === 'all') return
+  if (f === GROCERY_FILTER_UNCATEGORIZED) {
+    if (!items.value.some((i) => !i.groceryCategory?.trim())) {
+      groceryFilter.value = 'all'
+    }
+    return
+  }
+  const want = f.trim().toLowerCase()
+  const has = items.value.some((i) => (i.groceryCategory || '').trim().toLowerCase() === want)
+  if (!has) groceryFilter.value = 'all'
+})
 
 onMounted(async () => {
   await loadSavedLists()
