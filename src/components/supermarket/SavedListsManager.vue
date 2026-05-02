@@ -100,7 +100,7 @@ import SavedListForm from './SavedListForm.vue'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
 import { importSavedListsFromJson, readJsonFile } from '@/utils/savedListImport'
 
-defineProps<{
+const props = defineProps<{
   currentItems: ListItem[]
 }>()
 
